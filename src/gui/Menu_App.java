@@ -2,6 +2,7 @@ package gui;
 
 /*Imports from local packages*/
 import metodos.*;
+import estructuras.*;
 
 import java.awt.EventQueue;
 
@@ -14,6 +15,7 @@ import java.awt.Font;
 import javax.swing.JTextField;
 import javax.swing.JButton;
 import javax.swing.border.LineBorder;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -21,11 +23,11 @@ import javax.swing.JPanel;
 import java.awt.event.ActionListener;
 import java.security.NoSuchAlgorithmException;
 import java.awt.event.ActionEvent;
+import java.awt.Window.Type;
 
 public class Menu_App {
-
 	// Displays
-	private JFrame frame;
+	private JFrame frmEddDrive;
 	private JPanel PanelRegistro;
 	private JPanel PanelSesion;
 	// Texto
@@ -37,7 +39,9 @@ public class Menu_App {
 	private JButton btnRegistro;
 	private JButton btnIngresar;
 	private JButton btnRegistrar;
-	
+	// Instancias
+	Pila bitacora = new Pila();
+	HashTable usuarios = new HashTable();
 	/**
 	 * Launch the application.
 	 */
@@ -46,7 +50,7 @@ public class Menu_App {
 			public void run() {
 				try {
 					Menu_App window = new Menu_App();
-					window.frame.setVisible(true);
+					window.frmEddDrive.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -65,19 +69,21 @@ public class Menu_App {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		frame = new JFrame();
-		frame.getContentPane().setBackground(new Color(32, 178, 170));
-		frame.setResizable(false);
-		frame.setBounds(100, 100, 350, 260);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setLocationRelativeTo(null);
-		frame.getContentPane().setLayout(null);
+		frmEddDrive = new JFrame();
+		frmEddDrive.setType(Type.UTILITY);
+		frmEddDrive.setTitle("EDD DRIVE");
+		frmEddDrive.getContentPane().setBackground(new Color(32, 178, 170));
+		frmEddDrive.setResizable(false);
+		frmEddDrive.setBounds(100, 100, 350, 260);
+		frmEddDrive.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frmEddDrive.setLocationRelativeTo(null);
+		frmEddDrive.getContentPane().setLayout(null);
 		
 		PanelRegistro = new JPanel();
 		PanelRegistro.setBackground(new Color(30, 144, 255));
 		PanelRegistro.setBounds(0, 0, 344, 231);
 		PanelRegistro.setVisible(false);
-		frame.getContentPane().add(PanelRegistro);
+		frmEddDrive.getContentPane().add(PanelRegistro);
 		PanelRegistro.setLayout(null);
 		
 		JLabel lblNewLabel = new JLabel("Nuevo Registro");
@@ -105,13 +111,24 @@ public class Menu_App {
 		
 		btnRegistrar = new JButton("Registrar");
 		btnRegistrar.addActionListener(new ActionListener() {
+			@SuppressWarnings("deprecation")
 			public void actionPerformed(ActionEvent e) {
-				if (!txtUser_Reg.getText().isEmpty() && !txtUser_Reg.getText().isEmpty()) {
+				if (txtPassword_Reg.getText().length() >= 8 && !txtUser_Reg.getText().isEmpty()) {
 					// Hacer el proceso de Inserción y su respectivo ingreso a la tabla hash
-					JOptionPane.showMessageDialog(null, "El Usuario " + txtUser_Reg.getText() + " ha sido registrado...");
+					try {
+						usuarios.insertar(txtUser_Reg.getText(), txtPassword_Reg.getText());
+					} catch (NoSuchAlgorithmException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					// JOptionPane.showMessageDialog(null, "El Usuario " + txtUser_Reg.getText() + " ha sido registrado...");
 					limpiar();
 					PanelSesion.setVisible(true);
 					PanelRegistro.setVisible(false);
+				}else if(txtPassword_Reg.getText().length() < 8){
+					JOptionPane.showMessageDialog(null, "La contraseña, debe contener al menos 8 caracteres...");
+				}else {
+					JOptionPane.showMessageDialog(null, "Los campos no pueden estar vacios...");
 				}
 			}
 		});
@@ -120,14 +137,14 @@ public class Menu_App {
 		PanelRegistro.add(btnRegistrar);
 		
 		txtPassword_Reg = new JPasswordField();
-		txtPassword_Reg.setFont(new Font("Tahoma", Font.PLAIN, 15));
+		txtPassword_Reg.setFont(new Font("Segoe UI", Font.PLAIN, 20));
 		txtPassword_Reg.setBounds(155, 124, 145, 20);
 		PanelRegistro.add(txtPassword_Reg);
 		
 		PanelSesion = new JPanel();
 		PanelSesion.setBackground(new Color(32, 178, 170));
 		PanelSesion.setBounds(0, 0, 344, 231);
-		frame.getContentPane().add(PanelSesion);
+		frmEddDrive.getContentPane().add(PanelSesion);
 		PanelSesion.setLayout(null);
 		
 		btnIngresar = new JButton("Ingresar");
