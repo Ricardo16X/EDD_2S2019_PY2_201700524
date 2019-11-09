@@ -12,7 +12,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 
 import java.awt.Font;
+import java.awt.HeadlessException;
+
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 import javax.swing.JButton;
 import javax.swing.border.LineBorder;
 
@@ -23,7 +26,6 @@ import javax.swing.JPanel;
 import java.awt.event.ActionListener;
 import java.security.NoSuchAlgorithmException;
 import java.awt.event.ActionEvent;
-import java.awt.Window.Type;
 
 public class Menu_App {
 	// Displays
@@ -40,8 +42,9 @@ public class Menu_App {
 	private JButton btnIngresar;
 	private JButton btnRegistrar;
 	// Instancias
-	Pila bitacora = new Pila();
-	HashTable usuarios = new HashTable();
+	public static Pila bitacora = new Pila();
+	public static HashTable usuarios = new HashTable();
+	public static Admin admin = new Admin();
 	/**
 	 * Launch the application.
 	 */
@@ -51,6 +54,8 @@ public class Menu_App {
 				try {
 					Menu_App window = new Menu_App();
 					window.frmEddDrive.setVisible(true);
+					admin.setVisible(false);
+					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -70,7 +75,6 @@ public class Menu_App {
 	 */
 	private void initialize() {
 		frmEddDrive = new JFrame();
-		frmEddDrive.setType(Type.UTILITY);
 		frmEddDrive.setTitle("EDD DRIVE");
 		frmEddDrive.getContentPane().setBackground(new Color(32, 178, 170));
 		frmEddDrive.setResizable(false);
@@ -115,17 +119,22 @@ public class Menu_App {
 			public void actionPerformed(ActionEvent e) {
 				if (txtPassword_Reg.getText().length() >= 8 && !txtUser_Reg.getText().isEmpty()) {
 					// Hacer el proceso de Inserción y su respectivo ingreso a la tabla hash
-					try {
-						usuarios.insertar(txtUser_Reg.getText(), txtPassword_Reg.getText());
-					} catch (NoSuchAlgorithmException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
+					if(!usuarios.existe(txtUser_Reg.getText())) {
+						try {
+							usuarios.insertar(txtUser_Reg.getText(), txtPassword_Reg.getText());
+							JOptionPane.showMessageDialog(null, "El Usuario " + txtUser_Reg.getText() + " ha sido registrado...");
+							limpiar();
+							PanelSesion.setVisible(true);
+							PanelRegistro.setVisible(false);
+						} catch (NoSuchAlgorithmException e1) {
+							// TODO Auto-generated catch block
+							JOptionPane.showMessageDialog(null, e1.getMessage());
+						}
+					}else {
+						JOptionPane.showMessageDialog(null, "No se ha podido completar la operación\n"
+								+ "Hay un usuario registrado con el mismo nombre de usuario...");
 					}
-					// JOptionPane.showMessageDialog(null, "El Usuario " + txtUser_Reg.getText() + " ha sido registrado...");
-					limpiar();
-					PanelSesion.setVisible(true);
-					PanelRegistro.setVisible(false);
-				}else if(txtPassword_Reg.getText().length() < 8){
+				}else if(txtPassword_Reg.getText().length() < 8 && !txtPassword_Reg.getText().isEmpty()){
 					JOptionPane.showMessageDialog(null, "La contraseña, debe contener al menos 8 caracteres...");
 				}else {
 					JOptionPane.showMessageDialog(null, "Los campos no pueden estar vacios...");
@@ -151,19 +160,22 @@ public class Menu_App {
 		btnIngresar.addActionListener(new ActionListener() {
 			@SuppressWarnings("deprecation")
 			public void actionPerformed(ActionEvent e) {
-				try {
-					if (!txtUser_Log.getText().isEmpty() && !txtPassword_Log.getText().isEmpty()) {
-						/* Esto se activará solamente cuando el sha-256(contraseña) == sha-256(contraseña) almacenada en la tabla hash.
-						 * De igual forma, solamente entrará a este if si encuentra al usuario ingresado existe en la tabla.*/
-						if (true) {
-							String hash_input = Hash.get_sha256(Hash.sha256(txtUser_Log.getText()));
-							System.out.println(hash_input);
-							limpiar();
+				if (!txtUser_Log.getText().isEmpty() && !txtPassword_Log.getText().isEmpty()) {
+					/* Esto se activará solamente cuando el sha-256(contraseña) == sha-256(contraseña) almacenada en la tabla hash.
+					 * De igual forma, solamente entrará a este if si encuentra al usuario ingresado existe en la tabla.*/
+					try {
+						if (usuarios.existe(txtUser_Log.getText()) && usuarios.getPassHash(txtUser_Log.getText()).equals(Hash.get_sha256(Hash.sha256(txtPassword_Log.getText())))) {
+							JOptionPane.showMessageDialog(null, "Bienvenido " + txtUser_Log.getText());
+						}else {
+							JOptionPane.showMessageDialog(null, "El usuario o contraseña son incorrectos!!!");
 						}
+					} catch (HeadlessException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (NoSuchAlgorithmException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
 					}
-				} catch (NoSuchAlgorithmException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
 				}
 			}
 		});

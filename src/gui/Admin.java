@@ -5,16 +5,19 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JMenu;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 import java.awt.event.ActionEvent;
 import javax.swing.JPanel;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -37,6 +40,7 @@ public class Admin extends JFrame {
 	private JTextField txtDirFile;
 	private JTextPane txtProblemas;
 	private JScrollPane scrollProblemas;
+	private JPanel panelCargaMasiva;
 
 	/* Botones dentro del menú de Administrador */
 	private JMenuItem mntmAcciones;
@@ -89,13 +93,15 @@ public class Admin extends JFrame {
 				/*
 				 * Por el momento, vamos a crear la interfaz de la carga masiva de usuarios...
 				 */
+				panelCargaMasiva.setVisible(true);
 			}
 		});
 		menuAcciones.add(mntmAcciones);
 		getContentPane().setLayout(null);
 
-		JPanel panelCargaMasiva = new JPanel();
+		panelCargaMasiva = new JPanel();
 		panelCargaMasiva.setBounds(0, 0, 434, 240);
+		panelCargaMasiva.setVisible(false);
 		getContentPane().add(panelCargaMasiva);
 		panelCargaMasiva.setLayout(null);
 
@@ -123,19 +129,45 @@ public class Admin extends JFrame {
 						txtDirFile.setText(fl.getName());
 						// Lectura de Archivo
 						try {
-							lectorArchivo = new BufferedReader(new FileReader(fl.getAbsolutePath()));
+							lectorArchivo = new BufferedReader(new InputStreamReader(new FileInputStream(fl.getAbsolutePath()), "utf-8"));
 							try {
 								lineaLeida = lectorArchivo.readLine();
+								String errores = "Errores Registrados:\n"
+										+ "Usuario:\t\tMotivo:\n";
+								int registrados = 0;
 								while(lineaLeida != null) {
 									datos = lineaLeida.split(",");
+									/*
+									 * datos[0] = usuario
+									 * datos[1] = contraseña
+									 * */
+									if(Menu_App.usuarios.existe(datos[0])) {
+										errores += datos[0] + "\t\tya se encuentra Registrado:\n";
+									}else {
+										// Si no existe, entonces
+										// comprobaré que su contraseña, tenga por lo menos 8 caracteres.
+										if(datos[1].length() >= 8) {
+											// Proceso de Inserción
+											Menu_App.usuarios.insertar(datos[0], datos[1]);
+											registrados++;
+										}else {
+											errores += datos[0] + "\t\tLa contraseña no cumple con los 8 caracteres mínimos";
+										}
+									}
+									lineaLeida = lectorArchivo.readLine();
 								}
-							} catch (IOException e) {
+								
+								String resultado = "Usuarios Registrados: " + registrados + "\n\n";
+								resultado += errores;
+								
+								txtProblemas.setText(resultado);
+							} catch (IOException | NoSuchAlgorithmException e) {
 								// TODO Auto-generated catch block
-								e.printStackTrace();
+								JOptionPane.showMessageDialog(null, e.getMessage());
 							}
-						} catch (FileNotFoundException e) {
+						} catch (FileNotFoundException | UnsupportedEncodingException e) {
 							// TODO Auto-generated catch block
-							e.printStackTrace();
+							JOptionPane.showMessageDialog(null, e.getMessage());
 						}
 					}
 				}

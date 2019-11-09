@@ -21,7 +21,7 @@ public class HashTable {
 			743, 751, 757, 761, 769, 773, 787, 797, 809, 811, 821, 823, 827, 829, 839, 853, 857, 859, 863, 877, 881,
 			883, 887, 907, 911, 919, 929, 937, 941, 947, 953, 967, 971, 977, 983, 991, 997 };
 	// array de usuarios de tamaño 7
-	nodoHash users[] = new nodoHash[primos[indicePrimo]];
+	public static nodoHash users[] = new nodoHash[primos[indicePrimo]];
 	// esta variable me ayudará a guardar el numero de datos que podré guardar
 	// dependiendo de que factor de utilización se encuentra en mi tabla hash...
 	static int numeroPrimo = primos[indicePrimo];
@@ -89,8 +89,6 @@ public class HashTable {
 
 	public void reHashing() throws NoSuchAlgorithmException {
 		// Calculo del siguiente primo...
-		System.out.println("Antes del Rehashing");
-		mostrar();
 		indicePrimo = indicePrimo + 1;
 		numeroPrimo = primos[indicePrimo];
 
@@ -98,20 +96,12 @@ public class HashTable {
 
 		// En esta variable guardaré todos los datos almacenados anteriormente
 		// antes de proceder a realizar el rehashing.
-		
+
 		// Ordeno la tabla por medio del numero de insercion.
 		// Para que la "pureza" de la tabla hash no se pierda por completo.
-		nodoHash temp[] = ordenar_mergesort();
-		for (int i = 0; i < temp.length; i++) {
-			for (int j = 0; j < temp.length; j++) {
-
-			}
-		}
+		nodoHash temp[] = ordenar();
 		// Creo y almaceno nuevamente la tabla de users...
 		users = new nodoHash[numeroPrimo];
-		for (int usuario = 0; usuario < users.length; usuario++) {
-			users[usuario] = null;
-		}
 
 		// Aqui realizo el rehashing de todos los elementos creados en user...
 		// reinicializo el contador de usuarios registrados para que no haya problema al
@@ -123,37 +113,114 @@ public class HashTable {
 				insertar(temp[i].nom, temp[i].pass);
 			}
 		}
-		System.out.println("Después del Rehashing");
-		mostrar();
+		System.out.println("Después de Aplicar Rehashing");
+		mostrar(users);
 	}
 
-	public void mostrar() {
-		for (int i = 0; i < users.length; i++) {
-			if (users[i] != null) {
-				System.out.println(users[i].nom + "\n-----");
+	public void mostrar(nodoHash[] array) {
+		for (int i = 0; i < array.length; i++) {
+			if (array[i] != null) {
+				System.out.println(array[i].nom + "\n-----");
 			} else {
 				System.out.println("\n---null---");
 			}
 		}
 	}
 
-	public nodoHash[] ordenar_mergesort() {
-		nodoHash[] temporal = users;
+	public nodoHash[] ordenar() {
+		int contador = 0;
+		nodoHash[] temporal = new nodoHash[getSize()];
+		nodoHash temp = null;
+		for (int i = 0; i < users.length; i++) {
+			if (users[i] != null) {
+				temporal[contador] = users[i];
+				contador++;
+			}
+		}
+
+		// Ordenar mediante bubble sort, ya que necesito ingresar los datos
+		// conforme hayan sido ingresados anteriormente
+		// por lo que el "orden" de entrada, influira en su posición
+		// a la hora de hacer rehashing a la tabla...
 		for (int i = 0; i < temporal.length - 1; i++) {
-			for (int j = i; j < temporal.length; j++) {
-				
+			for (int j = i + 1; j < temporal.length; j++) {
+				if (temporal[j].orden < temporal[i].orden) {
+					temp = temporal[i];
+					temporal[i] = temporal[j];
+					temporal[j] = temp;
+				}
 			}
 		}
 		return temporal;
 	}
-	
+
 	public int getSize() {
 		int contador = 0;
 		for (int i = 0; i < users.length; i++) {
-			if(users[i] != null) {
+			if (users[i] != null) {
 				contador++;
 			}
 		}
 		return contador;
+	}
+
+	public boolean existe(String nom) {
+		int indice = 0;
+		for (char i : nom.toCharArray()) {
+			indice += i;
+		}
+		int search_index = indice % primos[indicePrimo];
+		if (users[search_index] != null) {
+			if (users[search_index].nom.equals(nom)) {
+				return true;
+			} else {
+				int contador = 0;
+				nuevo_hash_index = 0;
+				intentos = 1;
+				while (contador < primos[primos.length - 1]) {
+					nuevo_hash_index = (int) (search_index + Math.pow(intentos, 2)) % primos[indicePrimo];
+					if (users[nuevo_hash_index] != null) {
+						if (users[nuevo_hash_index].nom.equals(nom)) {
+							return true;
+						}
+					}
+					intentos++;
+					contador++;
+				}
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+	
+	public String getPassHash(String nom) {
+		int indice = 0;
+		for (char i : nom.toCharArray()) {
+			indice += i;
+		}
+		int search_index = indice % primos[indicePrimo];
+		if (users[search_index] != null) {
+			if (users[search_index].nom.equals(nom)) {
+				return users[search_index].hex_pass;
+			} else {
+				int contador = 0;
+				nuevo_hash_index = 0;
+				intentos = 1;
+				while (contador < primos[primos.length - 1]) {
+					nuevo_hash_index = (int) (search_index + Math.pow(intentos, 2)) % primos[indicePrimo];
+					if (users[nuevo_hash_index] != null) {
+						if (users[nuevo_hash_index].nom.equals(nom)) {
+							return users[nuevo_hash_index].hex_pass;
+						}
+					}
+					intentos++;
+					contador++;
+				}
+				return null;
+			}
+		} else {
+			return null;
+		}
 	}
 }
