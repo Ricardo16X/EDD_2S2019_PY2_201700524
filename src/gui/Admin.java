@@ -8,6 +8,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JMenu;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -55,8 +57,6 @@ public class Admin extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					Admin frame = new Admin();
-					frame.setVisible(true);
 					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -69,9 +69,17 @@ public class Admin extends JFrame {
 	 * Create the frame.
 	 */
 	public Admin() {
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e){
+				Linker.app.frmEddDrive.setVisible(true);
+				Linker.admin.setVisible(false);
+			}
+		});
 		setTitle("Men\u00FA Administrador");
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
+		setLocationRelativeTo(null);
 
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
@@ -141,14 +149,14 @@ public class Admin extends JFrame {
 									 * datos[0] = usuario
 									 * datos[1] = contraseña
 									 * */
-									if(Menu_App.usuarios.existe(datos[0])) {
+									if(Linker.usuarios.existe(datos[0]) || datos[0].equals("Admin")) {
 										errores += datos[0] + "\t\tya se encuentra Registrado:\n";
 									}else {
 										// Si no existe, entonces
 										// comprobaré que su contraseña, tenga por lo menos 8 caracteres.
 										if(datos[1].length() >= 8) {
 											// Proceso de Inserción
-											Menu_App.usuarios.insertar(datos[0], datos[1]);
+											Linker.usuarios.insertar(datos[0], datos[1]);
 											registrados++;
 										}else {
 											errores += datos[0] + "\t\tLa contraseña no cumple con los 8 caracteres mínimos";

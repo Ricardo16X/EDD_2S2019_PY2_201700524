@@ -2,7 +2,6 @@ package gui;
 
 /*Imports from local packages*/
 import metodos.*;
-import estructuras.*;
 
 import java.awt.EventQueue;
 
@@ -29,7 +28,7 @@ import java.awt.event.ActionEvent;
 
 public class Menu_App {
 	// Displays
-	private JFrame frmEddDrive;
+	protected JFrame frmEddDrive;
 	private JPanel PanelRegistro;
 	private JPanel PanelSesion;
 	// Texto
@@ -41,10 +40,6 @@ public class Menu_App {
 	private JButton btnRegistro;
 	private JButton btnIngresar;
 	private JButton btnRegistrar;
-	// Instancias
-	public static Pila bitacora = new Pila();
-	public static HashTable usuarios = new HashTable();
-	public static Admin admin = new Admin();
 	/**
 	 * Launch the application.
 	 */
@@ -52,9 +47,7 @@ public class Menu_App {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					Menu_App window = new Menu_App();
-					window.frmEddDrive.setVisible(true);
-					admin.setVisible(false);
+					Linker.app.frmEddDrive.setVisible(true);
 					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -119,9 +112,9 @@ public class Menu_App {
 			public void actionPerformed(ActionEvent e) {
 				if (txtPassword_Reg.getText().length() >= 8 && !txtUser_Reg.getText().isEmpty()) {
 					// Hacer el proceso de Inserción y su respectivo ingreso a la tabla hash
-					if(!usuarios.existe(txtUser_Reg.getText())) {
+					if(!txtUser_Reg.getText().equals("Admin") && !Linker.usuarios.existe(txtUser_Reg.getText())) {
 						try {
-							usuarios.insertar(txtUser_Reg.getText(), txtPassword_Reg.getText());
+							Linker.usuarios.insertar(txtUser_Reg.getText(), txtPassword_Reg.getText());
 							JOptionPane.showMessageDialog(null, "El Usuario " + txtUser_Reg.getText() + " ha sido registrado...");
 							limpiar();
 							PanelSesion.setVisible(true);
@@ -164,9 +157,13 @@ public class Menu_App {
 					/* Esto se activará solamente cuando el sha-256(contraseña) == sha-256(contraseña) almacenada en la tabla hash.
 					 * De igual forma, solamente entrará a este if si encuentra al usuario ingresado existe en la tabla.*/
 					try {
-						if (usuarios.existe(txtUser_Log.getText()) && usuarios.getPassHash(txtUser_Log.getText()).equals(Hash.get_sha256(Hash.sha256(txtPassword_Log.getText())))) {
+						if (Linker.usuarios.existe(txtUser_Log.getText()) && Linker.usuarios.getPassHash(txtUser_Log.getText()).equals(Hash.get_sha256(Hash.sha256(txtPassword_Log.getText())))) {
 							JOptionPane.showMessageDialog(null, "Bienvenido " + txtUser_Log.getText());
-						}else {
+						}else if(txtUser_Log.getText().equals("Admin") && txtPassword_Log.getText().equals("Admin")) {
+							Linker.app.frmEddDrive.setVisible(false);
+							Linker.admin.setVisible(true);
+						}
+						else {
 							JOptionPane.showMessageDialog(null, "El usuario o contraseña son incorrectos!!!");
 						}
 					} catch (HeadlessException e1) {

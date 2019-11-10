@@ -137,7 +137,6 @@ public class HashTable {
 				contador++;
 			}
 		}
-
 		// Ordenar mediante bubble sort, ya que necesito ingresar los datos
 		// conforme hayan sido ingresados anteriormente
 		// por lo que el "orden" de entrada, influira en su posición
