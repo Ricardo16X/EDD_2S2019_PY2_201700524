@@ -33,6 +33,7 @@ import java.awt.Font;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.ScrollPaneConstants;
+import java.awt.Color;
 
 public class Admin extends JFrame {
 	/**
@@ -44,7 +45,7 @@ public class Admin extends JFrame {
 	private JScrollPane scrollProblemas;
 	private JPanel panelCargaMasiva;
 
-	/* Botones dentro del menú de Administrador */
+	/* Botones dentro del menï¿½ de Administrador */
 	private JMenuItem mntmAcciones;
 	private JButton btnExaminar;
 
@@ -57,6 +58,8 @@ public class Admin extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
+					Admin set = new Admin();
+					set.setVisible(true);
 					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -69,6 +72,7 @@ public class Admin extends JFrame {
 	 * Create the frame.
 	 */
 	public Admin() {
+		getContentPane().setBackground(Color.DARK_GRAY);
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e){
@@ -77,6 +81,7 @@ public class Admin extends JFrame {
 			}
 		});
 		setTitle("Men\u00FA Administrador");
+		setResizable(false);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		setLocationRelativeTo(null);
@@ -89,12 +94,13 @@ public class Admin extends JFrame {
 
 		mntmAcciones = new JMenuItem("Carga Masiva");
 		mntmAcciones.addActionListener(new ActionListener() {
+                        @Override
 			public void actionPerformed(ActionEvent arg0) {
 				// Cuando la carga masiva se activa
 				// procederemos a pedir los datos del archivo de entrada
 				// que en este caso es un archivo .csv
-				// que contendrá los distintos usuarios que ingresaran en el sistema...
-				// del mismo modo, se procederá a realizar un metodo con el cual
+				// que contendrï¿½ los distintos usuarios que ingresaran en el sistema...
+				// del mismo modo, se procederï¿½ a realizar un metodo con el cual
 				// ir guardando todos los usuarios del archivo .csv
 				// que no lograron ingresar...
 
@@ -105,10 +111,20 @@ public class Admin extends JFrame {
 			}
 		});
 		menuAcciones.add(mntmAcciones);
+		
+		JMenuItem mntmCerrarSesin = new JMenuItem("Cerrar Sesi\u00F3n");
+		mntmCerrarSesin.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				Linker.app.frmEddDrive.setVisible(true);
+				Linker.admin.setVisible(false);
+			}
+		});
+		menuAcciones.add(mntmCerrarSesin);
 		getContentPane().setLayout(null);
 
 		panelCargaMasiva = new JPanel();
-		panelCargaMasiva.setBounds(0, 0, 434, 240);
+		panelCargaMasiva.setBackground(new Color(0, 51, 204));
+		panelCargaMasiva.setBounds(0, 0, 444, 250);
 		panelCargaMasiva.setVisible(false);
 		getContentPane().add(panelCargaMasiva);
 		panelCargaMasiva.setLayout(null);
@@ -116,7 +132,7 @@ public class Admin extends JFrame {
 		btnExaminar = new JButton("Examinar...");
 		btnExaminar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				// Con el botón examinar, procederemos a abrir el explorador de archivos
+				// Con el botï¿½n examinar, procederemos a abrir el explorador de archivos
 				// para poder con el, elegir el archivo para leerlo.
 				JFileChooser jf = new JFileChooser();
 				File fl = null;
@@ -147,19 +163,19 @@ public class Admin extends JFrame {
 									datos = lineaLeida.split(",");
 									/*
 									 * datos[0] = usuario
-									 * datos[1] = contraseña
+									 * datos[1] = contraseï¿½a
 									 * */
 									if(Linker.usuarios.existe(datos[0]) || datos[0].equals("Admin")) {
 										errores += datos[0] + "\t\tya se encuentra Registrado:\n";
 									}else {
 										// Si no existe, entonces
-										// comprobaré que su contraseña, tenga por lo menos 8 caracteres.
+										// comprobarï¿½ que su contraseï¿½a, tenga por lo menos 8 caracteres.
 										if(datos[1].length() >= 8) {
-											// Proceso de Inserción
+											// Proceso de Inserciï¿½n
 											Linker.usuarios.insertar(datos[0], datos[1]);
 											registrados++;
 										}else {
-											errores += datos[0] + "\t\tLa contraseña no cumple con los 8 caracteres mínimos";
+											errores += datos[0] + "\t\tLa contraseï¿½a no cumple con los 8 caracteres mï¿½nimos";
 										}
 									}
 									lineaLeida = lectorArchivo.readLine();
@@ -183,10 +199,11 @@ public class Admin extends JFrame {
 				
 			}
 		});
-		btnExaminar.setBounds(322, 40, 100, 25);
+		btnExaminar.setBounds(322, 40, 112, 25);
 		panelCargaMasiva.add(btnExaminar);
 
 		JLabel lblCargaMasiva = new JLabel("CARGA MASIVA");
+		lblCargaMasiva.setForeground(new Color(255, 255, 255));
 		lblCargaMasiva.setFont(new Font("Segoe UI", Font.BOLD | Font.ITALIC, 15));
 		lblCargaMasiva.setHorizontalAlignment(SwingConstants.CENTER);
 		lblCargaMasiva.setBounds(10, 11, 115, 14);
@@ -198,6 +215,7 @@ public class Admin extends JFrame {
 		txtDirFile.setColumns(10);
 
 		JLabel lblProblemas = new JLabel("Resultados:");
+		lblProblemas.setForeground(new Color(255, 255, 255));
 		lblProblemas.setBounds(10, 80, 89, 14);
 		panelCargaMasiva.add(lblProblemas);
 
@@ -205,7 +223,7 @@ public class Admin extends JFrame {
 		txtProblemas.setFont(new Font("Segoe UI", Font.PLAIN, 12));
 
 		scrollProblemas = new JScrollPane(txtProblemas);
-		scrollProblemas.setBounds(10, 95, 414, 134);
+		scrollProblemas.setBounds(10, 95, 424, 144);
 		scrollProblemas.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		scrollProblemas.setVisible(true);
 		panelCargaMasiva.add(scrollProblemas);
