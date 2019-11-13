@@ -18,6 +18,9 @@ import javax.swing.UIManager;
 import javax.swing.JButton;
 import javax.swing.border.LineBorder;
 
+import estructuras.HashTable;
+import estructuras.HashTable.nodoHash;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -40,6 +43,9 @@ public class Menu_App {
 	private JButton btnRegistro;
 	private JButton btnIngresar;
 	private JButton btnRegistrar;
+	// Variable control de Usuario
+	private nodoHash nodoUsuario;
+	public static HashTable usuarios;
 	/**
 	 * Launch the application.
 	 */
@@ -47,7 +53,8 @@ public class Menu_App {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					Linker.app.frmEddDrive.setVisible(true);
+					Menu_App window = new Menu_App();
+					window.frmEddDrive.setVisible(true);
 					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -61,6 +68,7 @@ public class Menu_App {
 	 */
 	public Menu_App() {
 		initialize();
+		usuarios = new HashTable();
 	}
 
 	/**
@@ -98,7 +106,6 @@ public class Menu_App {
 		txtUser_Reg = new JTextField();
 		txtUser_Reg.setBounds(155, 81, 145, 20);
 		PanelRegistro.add(txtUser_Reg);
-		txtUser_Reg.setColumns(10);
 		
 		JLabel lblContrasea_1 = new JLabel("Contrase\u00F1a: ");
 		lblContrasea_1.setForeground(new Color(255, 255, 255));
@@ -112,9 +119,9 @@ public class Menu_App {
 			public void actionPerformed(ActionEvent e) {
 				if (txtPassword_Reg.getText().length() >= 8 && !txtUser_Reg.getText().isEmpty()) {
 					// Hacer el proceso de Inserción y su respectivo ingreso a la tabla hash
-					if(!txtUser_Reg.getText().equals("Admin") && !Linker.usuarios.existe(txtUser_Reg.getText())) {
+					if(!txtUser_Reg.getText().equals("Admin") && !usuarios.existe(txtUser_Reg.getText())) {
 						try {
-							Linker.usuarios.insertar(txtUser_Reg.getText(), txtPassword_Reg.getText());
+							usuarios.insertar(txtUser_Reg.getText(), txtPassword_Reg.getText(), true);
 							JOptionPane.showMessageDialog(null, "El Usuario " + txtUser_Reg.getText() + " ha sido registrado...");
 							limpiar();
 							PanelSesion.setVisible(true);
@@ -157,8 +164,11 @@ public class Menu_App {
 					/* Esto se activará solamente cuando el sha-256(contraseña) == sha-256(contraseña) almacenada en la tabla hash.
 					 * De igual forma, solamente entrará a este if si encuentra al usuario ingresado existe en la tabla.*/
 					try {
-						if (Linker.usuarios.existe(txtUser_Log.getText()) && Linker.usuarios.getPassHash(txtUser_Log.getText()).equals(Hash.get_sha256(Hash.sha256(txtPassword_Log.getText())))) {
+						if (usuarios.existe(txtUser_Log.getText()) && usuarios.getPassHash(txtUser_Log.getText()).equals(Hash.get_sha256(Hash.sha256(txtPassword_Log.getText())))) {
 							JOptionPane.showMessageDialog(null, "Bienvenido " + txtUser_Log.getText());
+							nodoUsuario = usuarios.getUsuario(txtUser_Log.getText());
+							Archivos nuevaVentana = new Archivos();
+							nuevaVentana.setVisible(true);
 						}else if(txtUser_Log.getText().equals("Admin") && txtPassword_Log.getText().equals("Admin")) {
 							Linker.app.frmEddDrive.setVisible(false);
 							Linker.admin.setVisible(true);

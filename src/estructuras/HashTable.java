@@ -31,25 +31,25 @@ public class HashTable {
 	static String hex_hash = "";
 	static int nuevo_hash_index = 0;
 	static int intentos = 1;
+	
+	public static Grafo carpetaRaiz = null;
 
-	public class nodoHash {
+	public static class nodoHash {
 		/* Nodo de la tabla Hash */
 		String nom;
 		String pass;
 		String hex_pass;
 		int orden = 0;
-		Grafo archivos = null;
 
 		public nodoHash(String _nom, String _pass, String hex) {
 			// TODO Auto-generated constructor stub
 			nom = _nom;
-			pass = _pass;
 			hex_pass = hex;
-			archivos = new Grafo();
+			carpetaRaiz = new Grafo("/");
 		}
 	}
 
-	public void insertar(String _nom, String _pass) throws NoSuchAlgorithmException {
+	public void insertar(String _nom, String _pass, boolean nuevo) throws NoSuchAlgorithmException {
 		// Calculo de indice;
 		int indice = 0;
 		int hash_index = 0;
@@ -59,7 +59,9 @@ public class HashTable {
 		}
 		hash_index = indice % primos[indicePrimo];
 		// Calculo de codigo hash de la contraseña...
-		hex_hash = Hash.get_sha256(Hash.sha256(_pass));
+		if(nuevo) {
+			hex_hash = Hash.get_sha256(Hash.sha256(_pass));
+		}
 		if (users[hash_index] == null) {
 			users[hash_index] = new nodoHash(_nom, _pass, hex_hash);
 			users[hash_index].orden = usuarios_registrados;
@@ -110,7 +112,7 @@ public class HashTable {
 		usuarios_registrados = 0;
 		for (int i = 0; i < temp.length; i++) {
 			if (temp[i] != null) {
-				insertar(temp[i].nom, temp[i].pass);
+				insertar(temp[i].nom, temp[i].pass, false);
 			}
 		}
 		System.out.println("Después de Aplicar Rehashing");
@@ -211,6 +213,36 @@ public class HashTable {
 					if (users[nuevo_hash_index] != null) {
 						if (users[nuevo_hash_index].nom.equals(nom)) {
 							return users[nuevo_hash_index].hex_pass;
+						}
+					}
+					intentos++;
+					contador++;
+				}
+				return null;
+			}
+		} else {
+			return null;
+		}
+	}
+	
+	public nodoHash getUsuario(String nom) {
+		int indice = 0;
+		for (char i : nom.toCharArray()) {
+			indice += i;
+		}
+		int search_index = indice % primos[indicePrimo];
+		if (users[search_index] != null) {
+			if (users[search_index].nom.equals(nom)) {
+				return users[search_index];
+			} else {
+				int contador = 0;
+				nuevo_hash_index = 0;
+				intentos = 1;
+				while (contador < primos[primos.length - 1]) {
+					nuevo_hash_index = (int) (search_index + Math.pow(intentos, 2)) % primos[indicePrimo];
+					if (users[nuevo_hash_index] != null) {
+						if (users[nuevo_hash_index].nom.equals(nom)) {
+							return users[nuevo_hash_index];
 						}
 					}
 					intentos++;

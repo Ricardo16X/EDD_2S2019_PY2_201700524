@@ -165,14 +165,14 @@ public class Admin extends JFrame {
 									 * datos[0] = usuario
 									 * datos[1] = contrase�a
 									 * */
-									if(Linker.usuarios.existe(datos[0]) || datos[0].equals("Admin")) {
+									if(Menu_App.usuarios.existe(datos[0]) || datos[0].equals("Admin")) {
 										errores += datos[0] + "\t\tya se encuentra Registrado:\n";
 									}else {
 										// Si no existe, entonces
 										// comprobar� que su contrase�a, tenga por lo menos 8 caracteres.
 										if(datos[1].length() >= 8) {
 											// Proceso de Inserci�n
-											Linker.usuarios.insertar(datos[0], datos[1]);
+											Menu_App.usuarios.insertar(datos[0], datos[1], true);
 											registrados++;
 										}else {
 											errores += datos[0] + "\t\tLa contrase�a no cumple con los 8 caracteres m�nimos";

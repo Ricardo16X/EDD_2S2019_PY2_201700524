@@ -26,6 +26,12 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
+import estructuras.Grafo;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import javax.swing.JButton;
+import javax.swing.SwingConstants;
+
 public class Archivos extends JFrame {
 
 	/**
@@ -34,13 +40,16 @@ public class Archivos extends JFrame {
 	private static final long serialVersionUID = 9180214042948194919L;
 	private JPanel contentPane;
 	private JPanel graficos;
-	JPanel panelArchivos;
+	private JPanel panelArchivos;
 	private JTextField textField;
 	// Estas variables me ayudarán a recalcular el nuevo espacio donde se quedará la nueva carpeta o archivo
 	// y asi posicionarlo de manera correcta...
 	int x = 0,y = 0;
 	// JPopMenu para archivos y carpetas...
 	JPopupMenu archivos;	// Este pop menu solamente se activará en las carpetas y archivos...
+	
+	// Esta variable me ayudará a saber en que carpeta estoy actualmente
+	public static Grafo carpetaActual;
 
 	public static void main(String[] args) {
 			EventQueue.invokeLater(new Runnable() {
@@ -62,6 +71,7 @@ public class Archivos extends JFrame {
 	 * Create the frame.
 	 */
 	public Archivos() {
+		carpetaActual = Linker.sistemaArchivos.getCarpeta();
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
@@ -129,11 +139,22 @@ public class Archivos extends JFrame {
 		JMenu menu = new JMenu("Nuevo");
 		popupMenu.add(menu);
 
-		JMenuItem menuItem = new JMenuItem("Archivo");
-		menu.add(menuItem);
+		JMenuItem itemArchivo = new JMenuItem("Archivo");
+		menu.add(itemArchivo);
 
-		JMenuItem menuItem_1 = new JMenuItem("Carpeta");
-		menu.add(menuItem_1);
+		JMenuItem itemCarpeta = new JMenuItem("Carpeta");
+		itemCarpeta.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				Linker.sistemaArchivos.agregarCarpeta(carpetaActual, JOptionPane.showInputDialog("Ingresa el nombre de la Nueva Carpeta"));
+				
+			}
+		});
+		menu.add(itemCarpeta);
+		
+		JButton btnCarpeta = new JButton("Carpeta");
+		btnCarpeta.setIcon(new ImageIcon(Archivos.class.getResource("/imagenes/share.png")));
+		btnCarpeta.setBounds(10, 11, 150, 65);
+		panelArchivos.add(btnCarpeta);
 
 		JLabel lblDirectorio = new JLabel("Directorio:");
 		lblDirectorio.setFont(new Font("Segoe UI", Font.PLAIN, 15));
@@ -141,7 +162,7 @@ public class Archivos extends JFrame {
 		lblDirectorio.setBounds(80, 7, 90, 14);
 		contentPane.add(lblDirectorio);
 
-		textField = new JTextField();
+		textField = new JTextField(carpetaActual.nombreCarpeta);
 		textField.setFont(new Font("Segoe UI", Font.PLAIN, 15));
 		textField.setEditable(false);
 		textField.addKeyListener(new KeyAdapter() {
@@ -150,7 +171,6 @@ public class Archivos extends JFrame {
 				
 			}
 		});
-		textField.setText("/");
 		textField.setBounds(159, 0, 445, 27);
 		contentPane.add(textField);
 		
@@ -160,7 +180,7 @@ public class Archivos extends JFrame {
 		lblLeft.setBounds(614, 2, 25, 25);
 		contentPane.add(lblLeft);
 		
-		JLabel lblRight = new JLabel("D");
+		JLabel lblRight = new JLabel("");
 		Image right = new ImageIcon(getClass().getResource("/imagenes/right.png")).getImage();
 		lblRight.setIcon(new ImageIcon(right.getScaledInstance(25, 25, Image.SCALE_SMOOTH)));
 		lblRight.setBounds(649, 2, 25, 25);
@@ -185,14 +205,5 @@ public class Archivos extends JFrame {
 				popup.show(e.getComponent(), e.getX(), e.getY());
 			}
 		});
-	}
-	
-	// Métodos para la creación de archivos y posicionamiento general
-	public void crearCarpeta() {
-		
-	}
-	
-	public void crearArchivo() {
-		
 	}
 }
