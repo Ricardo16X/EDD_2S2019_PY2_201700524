@@ -44,7 +44,7 @@ public class Menu_App {
 	private JButton btnIngresar;
 	private JButton btnRegistrar;
 	// Variable control de Usuario
-	private nodoHash nodoUsuario;
+	public static nodoHash nodoUsuario;
 	public static HashTable usuarios;
 	/**
 	 * Launch the application.

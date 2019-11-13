@@ -7,7 +7,7 @@ public class Grafo {
 	public String nombreCarpeta;
 	Grafo primero, ultimo;
 	Grafo siguiente;
-	Arbol archivos;
+	public Arbol archivos;
 	
 	
 	public Grafo(String nombreCarpeta) {

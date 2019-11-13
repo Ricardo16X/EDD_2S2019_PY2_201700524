@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -13,7 +14,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -29,7 +32,11 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
+import estructuras.Arbol;
+import estructuras.Arbol.nodoAVL;
 import estructuras.Grafo;
+import estructuras.HashTable.nodoHash;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
@@ -47,11 +54,13 @@ public class Archivos extends JFrame {
 	JMenuItem compartir;
 	JPopupMenu carpetas;
 	
-	int alto = 10;
-	int limAlto = 644;
+	int alto = 10, ancho = 10;
 
 	// Esta variable me ayudará a saber en que carpeta estoy actualmente
 	public static Grafo carpetaActual;
+	public static Arbol archivoActual;
+	// Variable que me dirá que usuario está logueado...
+	public static nodoHash usuarioActual;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -73,7 +82,9 @@ public class Archivos extends JFrame {
 	 * Create the frame.
 	 */
 	public Archivos() {
-		//carpetaActual = Linker.sistemaArchivos.getCarpeta();
+		// carpetaActual = Linker.sistemaArchivos.getCarpeta();
+		// archivoActual = carpetaActual.archivos;
+		usuarioActual = Menu_App.nodoUsuario;
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
@@ -89,50 +100,23 @@ public class Archivos extends JFrame {
 				setVisible(false);
 			}
 		});
-		setLocationRelativeTo(null);
+		
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 710, 460);
+		setResizable(false);
+		setLocationRelativeTo(null);
 		contentPane = new JPanel();
 		contentPane.setBackground(Color.WHITE);
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-
-		JPanel panelDriveOp = new JPanel();
-		panelDriveOp.setBackground(new Color(255, 255, 255));
-		panelDriveOp.setBounds(0, 0, 70, 411);
-		contentPane.add(panelDriveOp);
-		panelDriveOp.setLayout(null);
-
-		JLabel Compartir = new JLabel();
-		Compartir.setBounds(10, 11, 50, 50);
-		Compartir.setIcon(new ImageIcon(getClass().getResource("/imagenes/share.png")));
-		panelDriveOp.add(Compartir);
-
-		JLabel Salir = new JLabel();
-		Salir.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseReleased(MouseEvent arg0) {
-				if (arg0.getButton() == MouseEvent.BUTTON1) {
-					Linker.app.frmEddDrive.setVisible(true);
-					setVisible(false);
-				}
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent arg0) {
-				Salir.setToolTipText("Cerrar Sesión");
-			}
-		});
-		Salir.setBounds(10, 350, 50, 50);
-		Salir.setIcon(new ImageIcon(getClass().getResource("/imagenes/salir.png")));
-		panelDriveOp.add(Salir);
 		
 		panelArchivos = new JPanel();
-		panelArchivos.setBounds(70, 29, 614, 382);
+		panelArchivos.setLayout(null);
+		panelArchivos.setBounds(10, 29, 684, 391);
 		panelArchivos.setBorder(new LineBorder(new Color(0, 0, 0), 2));
 		panelArchivos.setBackground(new Color(255, 255, 255));
-		panelArchivos.setAutoscrolls(true);
+		contentPane.add(panelArchivos);
 		
 		JPopupMenu popInicio = new JPopupMenu();
 		popInicio.setBounds(-10068, -10031, 105, 72);
@@ -142,44 +126,43 @@ public class Archivos extends JFrame {
 		popInicio.add(menu);
 
 		JMenuItem itemArchivo = new JMenuItem("Archivo");
-		menu.add(itemArchivo);
-
-		JMenuItem itemCarpeta = new JMenuItem("Carpeta");
-		itemCarpeta.addActionListener(new ActionListener() {
+		itemArchivo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				/*Linker.sistemaArchivos.agregarCarpeta(carpetaActual,
-						JOptionPane.showInputDialog("Ingresa el nombre de la Nueva Carpeta"));*/
-				// Primero creamos el Label
-				JLabel nuevoLabel = new JLabel();
-				nuevoLabel.setText("     " + JOptionPane.showInputDialog("Ingresa el nombre de la nueva Carpeta"));
-				nuevoLabel.setOpaque(true);
-				nuevoLabel.setBackground(Color.WHITE);
-				nuevoLabel.setBounds(10, alto, panelArchivos.getWidth() - 20, 30);
-				alto += 30;
-				if(alto > limAlto) {
-					panelArchivos.setPreferredSize(new Dimension(580, limAlto));
-					limAlto += 30;
+				JButton nuevoArchivo = new JButton();
+				nuevoArchivo.setText(JOptionPane.showInputDialog("Ingrese el nombre del nuevo archivo"));
+				nuevoArchivo.setContentAreaFilled(false);
+				nuevoArchivo.setOpaque(true);
+				nuevoArchivo.setBackground(Color.WHITE);
+				nuevoArchivo.setHorizontalAlignment(JButton.LEFT);
+				Image archivo = new ImageIcon(getClass().getResource("/imagenes/archivo.png")).getImage();
+				nuevoArchivo.setIcon(new ImageIcon(archivo.getScaledInstance(20, 20, Image.SCALE_SMOOTH)));
+				nuevoArchivo.setBounds(ancho, alto, 100, 30);
+				ancho += 100;
+				
+				if(ancho >= 610) {
+					alto += 30;
+					ancho = 10;
 				}
-				// Le agrego acciones
-				nuevoLabel.addMouseListener(new MouseAdapter() {
+				// Acciones
+				nuevoArchivo.addMouseListener(new MouseAdapter() {
 					@Override
 					public void mouseEntered(MouseEvent e) {
-						nuevoLabel.setBackground(new Color(30, 144, 255));
-						nuevoLabel.setForeground(Color.WHITE);
+						nuevoArchivo.setToolTipText(nuevoArchivo.getText());
+						nuevoArchivo.setBackground(new Color(30, 144, 255));
+						nuevoArchivo.setForeground(Color.white);
 						panelArchivos.repaint();
+						nuevoArchivo.repaint();
 					}
-					
 					@Override
 					public void mouseExited(MouseEvent e) {
-						nuevoLabel.setBackground(Color.WHITE);
-						nuevoLabel.setForeground(Color.BLACK);
+						nuevoArchivo.setBackground(Color.WHITE);
+						nuevoArchivo.setForeground(Color.BLACK);
+						nuevoArchivo.repaint();
 					}
-					
 					@Override
 					public void mouseClicked(MouseEvent e) {
 						if(e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
-							JLabel temp = (JLabel) e.getSource();
-							System.out.println("Entrando a carpeta llamada " + temp.getText());
+							// Abrir contenido de archivo en bloc de notas.
 						}
 					}
 				});
@@ -191,7 +174,66 @@ public class Archivos extends JFrame {
 				archivos.add(modificar);
 				archivos.add(eliminar);
 				archivos.add(compartir);
-				addPopup(nuevoLabel, archivos);
+				addPopup(nuevoArchivo, archivos);
+				panelArchivos.add(nuevoArchivo);
+				panelArchivos.repaint();
+			}
+		});
+		
+		menu.add(itemArchivo);
+
+		JMenuItem itemCarpeta = new JMenuItem("Carpeta");
+		itemCarpeta.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				/*Linker.sistemaArchivos.agregarCarpeta(carpetaActual,
+						JOptionPane.showInputDialog("Ingresa el nombre de la Nueva Carpeta"));*/
+				// Primero creamos el Label
+				JButton nuevoLabel = new JButton();
+				nuevoLabel.setText(JOptionPane.showInputDialog("Ingresa el nombre de la nueva Carpeta"));
+				String contenido = JOptionPane.showInputDialog("Ingrese el contenido del archivo...\nDejar vacio archivo en blanco.");
+				nuevoLabel.setContentAreaFilled(false);
+				nuevoLabel.setOpaque(true);
+				nuevoLabel.setBackground(Color.WHITE);
+				Image carpeta = new ImageIcon(getClass().getResource("/imagenes/carpeta.png")).getImage();
+				nuevoLabel.setIcon(new ImageIcon(carpeta.getScaledInstance(20, 20, Image.SCALE_SMOOTH)));
+				nuevoLabel.setBounds(ancho, alto, 100, 30);
+				nuevoLabel.setHorizontalAlignment(JButton.LEFT);
+				ancho += 100;
+				if(ancho >= 610){
+					alto += 30;
+					ancho = 10;
+				}
+				// Le agrego acciones
+				nuevoLabel.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseEntered(MouseEvent e) {
+						nuevoLabel.setToolTipText(nuevoLabel.getText());
+						nuevoLabel.setBackground(new Color(30, 144, 255));
+						nuevoLabel.setForeground(Color.white);
+						panelArchivos.repaint();
+						nuevoLabel.repaint();
+					}
+					@Override
+					public void mouseExited(MouseEvent e) {
+						nuevoLabel.setBackground(Color.WHITE);
+						nuevoLabel.setForeground(Color.BLACK);
+						nuevoLabel.repaint();
+					}
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if(e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
+							JButton temp = (JButton) e.getSource();
+							System.out.println("Entrando a carpeta llamada " + temp.getText());
+						}
+					}
+				});
+				// Le agrego los menu emergentes
+				modificar = new JMenuItem("Modificar");
+				eliminar = new JMenuItem("Eliminar");
+				carpetas = new JPopupMenu();
+				carpetas.add(modificar);
+				carpetas.add(eliminar);
+				addPopup(nuevoLabel, carpetas);
 				panelArchivos.add(nuevoLabel);
 				panelArchivos.repaint();
 			}
@@ -201,13 +243,13 @@ public class Archivos extends JFrame {
 		JLabel lblDirectorio = new JLabel("Directorio:");
 		lblDirectorio.setFont(new Font("Segoe UI", Font.PLAIN, 15));
 		lblDirectorio.setForeground(Color.BLACK);
-		lblDirectorio.setBounds(80, 7, 90, 14);
+		lblDirectorio.setBounds(10, 6, 76, 14);
 		contentPane.add(lblDirectorio);
 
 		textField = new JTextField("&");
 		textField.setFont(new Font("Segoe UI", Font.PLAIN, 15));
 		textField.setEditable(false);
-		textField.setBounds(159, 0, 445, 27);
+		textField.setBounds(96, 0, 508, 27);
 		contentPane.add(textField);
 
 		JLabel lblLeft = new JLabel();
@@ -216,7 +258,7 @@ public class Archivos extends JFrame {
 		lblLeft.setBounds(614, 2, 25, 25);
 		contentPane.add(lblLeft);
 
-		JLabel lblRight = new JLabel("");
+		JLabel lblRight = new JLabel();
 		Image right = new ImageIcon(getClass().getResource("/imagenes/right.png")).getImage();
 		lblRight.setIcon(new ImageIcon(right.getScaledInstance(25, 25, Image.SCALE_SMOOTH)));
 		lblRight.setBounds(649, 2, 25, 25);
