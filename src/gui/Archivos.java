@@ -2,6 +2,7 @@ package gui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Image;
@@ -20,6 +21,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -29,50 +32,48 @@ import javax.swing.border.LineBorder;
 import estructuras.Grafo;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import javax.swing.JButton;
-import javax.swing.SwingConstants;
-import javax.swing.JList;
 
 public class Archivos extends JFrame {
-
-	/**
-	 * 
-	 */
+	
 	private static final long serialVersionUID = 9180214042948194919L;
+	// Vista
 	private JPanel contentPane;
-	private JPanel graficos;
 	private JPanel panelArchivos;
 	private JTextField textField;
-	// Estas variables me ayudarán a recalcular el nuevo espacio donde se quedará la nueva carpeta o archivo
-	// y asi posicionarlo de manera correcta...
-	int x = 0,y = 0;
 	// JPopMenu para archivos y carpetas...
-	JPopupMenu archivos;	// Este pop menu solamente se activará en las carpetas y archivos...
+	JPopupMenu archivos; // Este pop menu solamente se activará en las carpetas y archivos...
+	JMenuItem modificar;
+	JMenuItem eliminar;
+	JMenuItem compartir;
+	JPopupMenu carpetas;
 	
+	int alto = 10;
+	int limAlto = 644;
+
 	// Esta variable me ayudará a saber en que carpeta estoy actualmente
 	public static Grafo carpetaActual;
 
 	public static void main(String[] args) {
-			EventQueue.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					// TODO Auto-generated method stub
-					try {
-						Archivos archivos = new Archivos();
-						archivos.setVisible(true);
-						UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-					} catch (Exception e) {
-						// TODO: handle exception
-					}
+		EventQueue.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				try {
+					Archivos archivos = new Archivos();
+					archivos.setVisible(true);
+					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+				} catch (Exception e) {
+					// TODO: handle exception
 				}
-			});
+			}
+		});
 	}
 
 	/**
 	 * Create the frame.
 	 */
 	public Archivos() {
-		carpetaActual = Linker.sistemaArchivos.getCarpeta();
+		//carpetaActual = Linker.sistemaArchivos.getCarpeta();
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
@@ -112,11 +113,12 @@ public class Archivos extends JFrame {
 		Salir.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent arg0) {
-				if(arg0.getButton() == MouseEvent.BUTTON1) {
+				if (arg0.getButton() == MouseEvent.BUTTON1) {
 					Linker.app.frmEddDrive.setVisible(true);
 					setVisible(false);
 				}
 			}
+
 			@Override
 			public void mouseEntered(MouseEvent arg0) {
 				Salir.setToolTipText("Cerrar Sesión");
@@ -125,20 +127,19 @@ public class Archivos extends JFrame {
 		Salir.setBounds(10, 350, 50, 50);
 		Salir.setIcon(new ImageIcon(getClass().getResource("/imagenes/salir.png")));
 		panelDriveOp.add(Salir);
-
+		
 		panelArchivos = new JPanel();
+		panelArchivos.setBounds(70, 29, 614, 382);
 		panelArchivos.setBorder(new LineBorder(new Color(0, 0, 0), 2));
 		panelArchivos.setBackground(new Color(255, 255, 255));
-		panelArchivos.setBounds(70, 29, 614, 382);
-		contentPane.add(panelArchivos);
-		panelArchivos.setLayout(null);
-
-		JPopupMenu popupMenu = new JPopupMenu();
-		popupMenu.setBounds(-10068, -10031, 105, 72);
-		addPopup(panelArchivos, popupMenu);
+		panelArchivos.setAutoscrolls(true);
+		
+		JPopupMenu popInicio = new JPopupMenu();
+		popInicio.setBounds(-10068, -10031, 105, 72);
+		addPopup(panelArchivos, popInicio);
 
 		JMenu menu = new JMenu("Nuevo");
-		popupMenu.add(menu);
+		popInicio.add(menu);
 
 		JMenuItem itemArchivo = new JMenuItem("Archivo");
 		menu.add(itemArchivo);
@@ -146,20 +147,56 @@ public class Archivos extends JFrame {
 		JMenuItem itemCarpeta = new JMenuItem("Carpeta");
 		itemCarpeta.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				Linker.sistemaArchivos.agregarCarpeta(carpetaActual, JOptionPane.showInputDialog("Ingresa el nombre de la Nueva Carpeta"));
-				
+				/*Linker.sistemaArchivos.agregarCarpeta(carpetaActual,
+						JOptionPane.showInputDialog("Ingresa el nombre de la Nueva Carpeta"));*/
+				// Primero creamos el Label
+				JLabel nuevoLabel = new JLabel();
+				nuevoLabel.setText("     " + JOptionPane.showInputDialog("Ingresa el nombre de la nueva Carpeta"));
+				nuevoLabel.setOpaque(true);
+				nuevoLabel.setBackground(Color.WHITE);
+				nuevoLabel.setBounds(10, alto, panelArchivos.getWidth() - 20, 30);
+				alto += 30;
+				if(alto > limAlto) {
+					panelArchivos.setPreferredSize(new Dimension(580, limAlto));
+					limAlto += 30;
+				}
+				// Le agrego acciones
+				nuevoLabel.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseEntered(MouseEvent e) {
+						nuevoLabel.setBackground(new Color(30, 144, 255));
+						nuevoLabel.setForeground(Color.WHITE);
+						panelArchivos.repaint();
+					}
+					
+					@Override
+					public void mouseExited(MouseEvent e) {
+						nuevoLabel.setBackground(Color.WHITE);
+						nuevoLabel.setForeground(Color.BLACK);
+					}
+					
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if(e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
+							JLabel temp = (JLabel) e.getSource();
+							System.out.println("Entrando a carpeta llamada " + temp.getText());
+						}
+					}
+				});
+				// Le agrego los menu emergentes
+				modificar = new JMenuItem("Modificar");
+				eliminar = new JMenuItem("Eliminar");
+				compartir = new JMenuItem("Compartir");
+				archivos = new JPopupMenu();
+				archivos.add(modificar);
+				archivos.add(eliminar);
+				archivos.add(compartir);
+				addPopup(nuevoLabel, archivos);
+				panelArchivos.add(nuevoLabel);
+				panelArchivos.repaint();
 			}
 		});
 		menu.add(itemCarpeta);
-		
-		JButton btnCarpeta = new JButton("Carpeta");
-		btnCarpeta.setIcon(new ImageIcon(Archivos.class.getResource("/imagenes/share.png")));
-		btnCarpeta.setBounds(10, 11, 150, 65);
-		panelArchivos.add(btnCarpeta);
-		
-		JList list = new JList();
-		list.setBounds(156, 174, 163, 50);
-		panelArchivos.add(list);
 
 		JLabel lblDirectorio = new JLabel("Directorio:");
 		lblDirectorio.setFont(new Font("Segoe UI", Font.PLAIN, 15));
@@ -167,24 +204,18 @@ public class Archivos extends JFrame {
 		lblDirectorio.setBounds(80, 7, 90, 14);
 		contentPane.add(lblDirectorio);
 
-		textField = new JTextField(carpetaActual.nombreCarpeta);
+		textField = new JTextField("&");
 		textField.setFont(new Font("Segoe UI", Font.PLAIN, 15));
 		textField.setEditable(false);
-		textField.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyReleased(KeyEvent arg0) {
-				
-			}
-		});
 		textField.setBounds(159, 0, 445, 27);
 		contentPane.add(textField);
-		
+
 		JLabel lblLeft = new JLabel();
 		Image left = new ImageIcon(getClass().getResource("/imagenes/left.png")).getImage();
 		lblLeft.setIcon(new ImageIcon(left.getScaledInstance(25, 25, Image.SCALE_SMOOTH)));
 		lblLeft.setBounds(614, 2, 25, 25);
 		contentPane.add(lblLeft);
-		
+
 		JLabel lblRight = new JLabel("");
 		Image right = new ImageIcon(getClass().getResource("/imagenes/right.png")).getImage();
 		lblRight.setIcon(new ImageIcon(right.getScaledInstance(25, 25, Image.SCALE_SMOOTH)));
