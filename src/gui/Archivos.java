@@ -31,6 +31,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JButton;
 import javax.swing.SwingConstants;
+import javax.swing.JList;
 
 public class Archivos extends JFrame {
 
@@ -155,6 +156,10 @@ public class Archivos extends JFrame {
 		btnCarpeta.setIcon(new ImageIcon(Archivos.class.getResource("/imagenes/share.png")));
 		btnCarpeta.setBounds(10, 11, 150, 65);
 		panelArchivos.add(btnCarpeta);
+		
+		JList list = new JList();
+		list.setBounds(156, 174, 163, 50);
+		panelArchivos.add(list);
 
 		JLabel lblDirectorio = new JLabel("Directorio:");
 		lblDirectorio.setFont(new Font("Segoe UI", Font.PLAIN, 15));
