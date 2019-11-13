@@ -10,19 +10,19 @@ public class Arbol {
 	}
 
 	public class nodoAVL {
-		String NombreArchivo;
-		String Contenido;
-		int FactorEquilibrio;
-		int Altura;
-		String Timestamp;
-		String Propietario;
+		public String NombreArchivo;
+		public String Contenido;
+		public int FactorEquilibrio;
+		public int Altura;
+		public String Timestamp;
+		public String Propietario;
 
-		nodoAVL l, r;
+		public nodoAVL l, r;
 
-		public nodoAVL(String nom, String cont, int FE, String timestamp, String nomUser) {
+		public nodoAVL(String nom, String cont, String timestamp, String nomUser) {
 			NombreArchivo = nom;
 			Contenido = cont;
-			FactorEquilibrio = FE;
+			FactorEquilibrio = 1;
 			Altura = 1;
 			Timestamp = timestamp;
 			Propietario = nomUser;
@@ -85,15 +85,15 @@ public class Arbol {
 	}
 
 	// Insertar archivo a carpeta;
-	public nodoAVL crearArchivo(nodoAVL raiz, String nombreArchivo, String contenido, int FE, String Timestamp,
+	public nodoAVL crearArchivo(nodoAVL raiz, String nombreArchivo, String contenido, String Timestamp,
 			String nombreUsuario) {
-		nodoAVL archivo = new nodoAVL(nombreArchivo, contenido, FE, Timestamp, nombreUsuario);
+		nodoAVL archivo = new nodoAVL(nombreArchivo, contenido,Timestamp, nombreUsuario);
 		if (raiz == null)
-			return (new nodoAVL(nombreArchivo, contenido, FE, Timestamp, nombreUsuario));
+			return (new nodoAVL(nombreArchivo, contenido, Timestamp, nombreUsuario));
 		if (nombreArchivo.compareTo(raiz.NombreArchivo) < 1) {
-			raiz.l = crearArchivo(raiz.l, nombreArchivo, contenido, FE, Timestamp, nombreUsuario);
+			raiz.l = crearArchivo(raiz.l, nombreArchivo, contenido, Timestamp, nombreUsuario);
 		}else if(nombreArchivo.compareTo(raiz.NombreArchivo) > 1) {
-			raiz.r = crearArchivo(raiz.r, nombreArchivo, contenido, FE, Timestamp, nombreUsuario);
+			raiz.r = crearArchivo(raiz.r, nombreArchivo, contenido, Timestamp, nombreUsuario);
 		}else {
 			return raiz;
 		}

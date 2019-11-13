@@ -36,7 +36,7 @@ public class HashTable {
 
 	public static class nodoHash {
 		/* Nodo de la tabla Hash */
-		String nom;
+		public String nom;
 		String pass;
 		String hex_pass;
 		int orden = 0;

@@ -6,3 +6,5 @@ src/imagenes
 miglayout-src.zip
 miglayout15-swing.jar
 src/gui/jscrollpane.java
+*.jpg
+*.dot

@@ -2,21 +2,28 @@ package gui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -24,24 +31,21 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import estructuras.Arbol;
 import estructuras.Arbol.nodoAVL;
 import estructuras.Grafo;
 import estructuras.HashTable.nodoHash;
 
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-
 public class Archivos extends JFrame {
-	
+
 	private static final long serialVersionUID = 9180214042948194919L;
 	// Vista
 	private JPanel contentPane;
@@ -53,7 +57,7 @@ public class Archivos extends JFrame {
 	JMenuItem eliminar;
 	JMenuItem compartir;
 	JPopupMenu carpetas;
-	
+
 	int alto = 10, ancho = 10;
 
 	// Esta variable me ayudará a saber en que carpeta estoy actualmente
@@ -61,6 +65,9 @@ public class Archivos extends JFrame {
 	public static Arbol archivoActual;
 	// Variable que me dirá que usuario está logueado...
 	public static nodoHash usuarioActual;
+	private BufferedReader lectorArchivo;
+	
+	private static String dot;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -82,8 +89,8 @@ public class Archivos extends JFrame {
 	 * Create the frame.
 	 */
 	public Archivos() {
-		// carpetaActual = Linker.sistemaArchivos.getCarpeta();
-		// archivoActual = carpetaActual.archivos;
+		carpetaActual = Linker.sistemaArchivos.getCarpeta();
+		archivoActual = carpetaActual.archivos;
 		usuarioActual = Menu_App.nodoUsuario;
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -100,7 +107,7 @@ public class Archivos extends JFrame {
 				setVisible(false);
 			}
 		});
-		
+
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 710, 460);
 		setResizable(false);
@@ -110,14 +117,14 @@ public class Archivos extends JFrame {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-		
+
 		panelArchivos = new JPanel();
 		panelArchivos.setLayout(null);
 		panelArchivos.setBounds(10, 29, 684, 391);
 		panelArchivos.setBorder(new LineBorder(new Color(0, 0, 0), 2));
 		panelArchivos.setBackground(new Color(255, 255, 255));
 		contentPane.add(panelArchivos);
-		
+
 		JPopupMenu popInicio = new JPopupMenu();
 		popInicio.setBounds(-10068, -10031, 105, 72);
 		addPopup(panelArchivos, popInicio);
@@ -125,11 +132,67 @@ public class Archivos extends JFrame {
 		JMenu menu = new JMenu("Nuevo");
 		popInicio.add(menu);
 
+		JMenuItem cargaArchivos = new JMenuItem("Carga Archivos");
+		cargaArchivos.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				// TODO Auto-generated method stub
+				JFileChooser cargaMasiva = new JFileChooser();
+				File fl = null;
+				String[] datos;
+				String lineaLeida;
+				String timestamp;
+				String usuario;
+
+				cargaMasiva.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				FileFilter filtro = new FileNameExtensionFilter("Archivos CSV", "csv");
+				cargaMasiva.setFileFilter(filtro);
+				if (cargaMasiva.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+					try {
+						fl = cargaMasiva.getSelectedFile();
+					} catch (Exception e) {
+						// TODO: handle exception
+						JOptionPane.showMessageDialog(null, "Error al leer el archivo .csv", "Error de Lectura",
+								JOptionPane.ERROR_MESSAGE);
+					}
+					if (fl.canRead()) {
+						try {
+							lectorArchivo = new BufferedReader(
+									new InputStreamReader(new FileInputStream(fl.getAbsolutePath()), "utf-8"));
+							lineaLeida = lectorArchivo.readLine();
+							lineaLeida = lectorArchivo.readLine();
+							while (lineaLeida != null) {
+								datos = lineaLeida.split(",");
+								/*
+								 * datos[0] = nombre Archivo datos[1] = contenido archivo
+								 */
+								Date fecha = new Date();
+								SimpleDateFormat objSDF = new SimpleDateFormat("HH:mm:ss dd-MMM-yyyy");
+								timestamp = objSDF.format(fecha);
+								usuario = usuarioActual.nom;
+								/* Proceso de Inserción */
+								carpetaActual.archivos.raiz = Linker.archivos.crearArchivo(carpetaActual.archivos.raiz,
+										datos[0], datos[1], timestamp, usuario);
+								/* Fin Inserción */
+								lineaLeida = lectorArchivo.readLine();
+							}
+						} catch (Exception e) {
+							// TODO: handle exception
+						}
+					}
+					graphic(carpetaActual.archivos.raiz);
+				}
+			}
+		});
+		popInicio.add(cargaArchivos);
+
 		JMenuItem itemArchivo = new JMenuItem("Archivo");
 		itemArchivo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				JButton nuevoArchivo = new JButton();
 				nuevoArchivo.setText(JOptionPane.showInputDialog("Ingrese el nombre del nuevo archivo"));
+				String contenido = JOptionPane
+						.showInputDialog("Ingrese el contenido del archivo...\nDejar vacio archivo en blanco.");
 				nuevoArchivo.setContentAreaFilled(false);
 				nuevoArchivo.setOpaque(true);
 				nuevoArchivo.setBackground(Color.WHITE);
@@ -138,8 +201,8 @@ public class Archivos extends JFrame {
 				nuevoArchivo.setIcon(new ImageIcon(archivo.getScaledInstance(20, 20, Image.SCALE_SMOOTH)));
 				nuevoArchivo.setBounds(ancho, alto, 100, 30);
 				ancho += 100;
-				
-				if(ancho >= 610) {
+
+				if (ancho >= 610) {
 					alto += 30;
 					ancho = 10;
 				}
@@ -153,16 +216,19 @@ public class Archivos extends JFrame {
 						panelArchivos.repaint();
 						nuevoArchivo.repaint();
 					}
+
 					@Override
 					public void mouseExited(MouseEvent e) {
 						nuevoArchivo.setBackground(Color.WHITE);
 						nuevoArchivo.setForeground(Color.BLACK);
 						nuevoArchivo.repaint();
 					}
+
 					@Override
 					public void mouseClicked(MouseEvent e) {
-						if(e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
+						if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
 							// Abrir contenido de archivo en bloc de notas.
+
 						}
 					}
 				});
@@ -179,18 +245,19 @@ public class Archivos extends JFrame {
 				panelArchivos.repaint();
 			}
 		});
-		
+
 		menu.add(itemArchivo);
 
 		JMenuItem itemCarpeta = new JMenuItem("Carpeta");
 		itemCarpeta.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				/*Linker.sistemaArchivos.agregarCarpeta(carpetaActual,
-						JOptionPane.showInputDialog("Ingresa el nombre de la Nueva Carpeta"));*/
+				/*
+				 * Linker.sistemaArchivos.agregarCarpeta(carpetaActual,
+				 * JOptionPane.showInputDialog("Ingresa el nombre de la Nueva Carpeta"));
+				 */
 				// Primero creamos el Label
 				JButton nuevoLabel = new JButton();
 				nuevoLabel.setText(JOptionPane.showInputDialog("Ingresa el nombre de la nueva Carpeta"));
-				String contenido = JOptionPane.showInputDialog("Ingrese el contenido del archivo...\nDejar vacio archivo en blanco.");
 				nuevoLabel.setContentAreaFilled(false);
 				nuevoLabel.setOpaque(true);
 				nuevoLabel.setBackground(Color.WHITE);
@@ -199,7 +266,7 @@ public class Archivos extends JFrame {
 				nuevoLabel.setBounds(ancho, alto, 100, 30);
 				nuevoLabel.setHorizontalAlignment(JButton.LEFT);
 				ancho += 100;
-				if(ancho >= 610){
+				if (ancho >= 610) {
 					alto += 30;
 					ancho = 10;
 				}
@@ -213,15 +280,17 @@ public class Archivos extends JFrame {
 						panelArchivos.repaint();
 						nuevoLabel.repaint();
 					}
+
 					@Override
 					public void mouseExited(MouseEvent e) {
 						nuevoLabel.setBackground(Color.WHITE);
 						nuevoLabel.setForeground(Color.BLACK);
 						nuevoLabel.repaint();
 					}
+
 					@Override
 					public void mouseClicked(MouseEvent e) {
-						if(e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
+						if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
 							JButton temp = (JButton) e.getSource();
 							System.out.println("Entrando a carpeta llamada " + temp.getText());
 						}
@@ -283,5 +352,44 @@ public class Archivos extends JFrame {
 				popup.show(e.getComponent(), e.getX(), e.getY());
 			}
 		});
+	}
+	
+	
+	public void graphic(nodoAVL raizArbol) {
+		dot = "";
+		dot += "digraph G{";
+		int id_ = 1;
+		System.out.println(dot);
+		aux_graphic(raizArbol, id_);
+		dot += "}";
+		System.out.println(dot);
+		try {
+			FileWriter avl = new FileWriter("arbolAVL.dot");
+			BufferedWriter escritor = new BufferedWriter(avl);
+			escritor.write(dot);
+			escritor.close();
+			Runtime.getRuntime().exec("dot -Tjpg arbolAVL.dot -o prueba.jpg");
+			Thread.sleep(500);
+			System.out.println("He finalizado el proceso");
+		} catch (IOException | InterruptedException e) {
+			// TODO Auto-generated catch block
+			System.out.println(e.getMessage());
+		}
+	}
+	
+	public void aux_graphic(nodoAVL raizArbol, int id) {
+		if(raizArbol != null) {
+			dot += "\"" + raizArbol.NombreArchivo + "\"\n";
+			id += 1;
+			aux_graphic(raizArbol.l, id);
+			aux_graphic(raizArbol.r, id);
+			
+			if(raizArbol.l != null){
+				dot += "\"" + raizArbol.NombreArchivo + "\"" + " -> " + "\"" + raizArbol.l.NombreArchivo + "\"\n";
+			}
+			if(raizArbol.r != null) {
+				dot += "\"" + raizArbol.NombreArchivo + "\""  + " -> " + "\"" + raizArbol.r.NombreArchivo + "\"\n";
+			}
+		}
 	}
 }
