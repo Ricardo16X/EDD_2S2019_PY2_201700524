@@ -57,6 +57,8 @@ public class Arbol {
 		X.Altura = MAX(Altura(X.l), Altura(X.r)) + 1;
 
 		// Retornar la nueva "raiz" del arbol
+		nodoCambio.FactorEquilibrio = FE(nodoCambio);
+		X.FactorEquilibrio = FE(X);
 		return X;
 	}
 
@@ -73,6 +75,8 @@ public class Arbol {
 		X.Altura = MAX(Altura(X.l), Altura(X.r)) + 1;
 
 		// Retornar la nueva "raiz" del arbol
+		nodoCambio.FactorEquilibrio = FE(nodoCambio);
+		X.FactorEquilibrio = FE(X);
 		return X;
 	}
 
@@ -87,7 +91,6 @@ public class Arbol {
 	// Insertar archivo a carpeta;
 	public nodoAVL crearArchivo(nodoAVL raiz, String nombreArchivo, String contenido, String Timestamp,
 			String nombreUsuario) {
-		nodoAVL archivo = new nodoAVL(nombreArchivo, contenido,Timestamp, nombreUsuario);
 		if (raiz == null)
 			return (new nodoAVL(nombreArchivo, contenido, Timestamp, nombreUsuario));
 		if (nombreArchivo.compareTo(raiz.NombreArchivo) < 1) {
@@ -117,5 +120,18 @@ public class Arbol {
 		}
 		
 		return raiz;
+	}
+	
+	public boolean existencia(nodoAVL raiz, String nombreArchivo) {
+		if(nombreArchivo.compareTo(raiz.NombreArchivo) > 1) {
+			existencia(raiz.r, nombreArchivo);
+		}else if(nombreArchivo.compareTo(raiz.NombreArchivo) < 1) {
+			existencia(raiz.l, nombreArchivo);
+		}else {
+			if(raiz.NombreArchivo.compareTo(nombreArchivo) == 0) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

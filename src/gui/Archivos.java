@@ -354,7 +354,7 @@ public class Archivos extends JFrame {
 		});
 	}
 	
-	
+	/*Gráfico de Árbol AVL*/
 	public void graphic(nodoAVL raizArbol) {
 		dot = "";
 		dot += "digraph G{";
@@ -392,4 +392,5 @@ public class Archivos extends JFrame {
 			}
 		}
 	}
+	/*Fin Gráfico de Árbol AVL*/
 }

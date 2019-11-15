@@ -10,7 +10,6 @@ public class Linker {
 	protected static Archivos file = new Archivos();
 	
 	public Linker(){
-		admin.setVisible(false);
 		file.setVisible(false);
 	}
 }

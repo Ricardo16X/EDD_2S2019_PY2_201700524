@@ -164,14 +164,15 @@ public class Menu_App {
 					/* Esto se activará solamente cuando el sha-256(contraseña) == sha-256(contraseña) almacenada en la tabla hash.
 					 * De igual forma, solamente entrará a este if si encuentra al usuario ingresado existe en la tabla.*/
 					try {
-						if (usuarios.existe(txtUser_Log.getText()) && usuarios.getPassHash(txtUser_Log.getText()).equals(Hash.get_sha256(Hash.sha256(txtPassword_Log.getText())))) {
+						if(txtUser_Log.getText().equals("Admin") && txtPassword_Log.getText().equals("Admin")) {
+							frmEddDrive.setVisible(false);
+							Admin nd = new Admin();
+							nd.setVisible(true);
+						}else if (usuarios.existe(txtUser_Log.getText()) && usuarios.getPassHash(txtUser_Log.getText()).equals(Hash.get_sha256(Hash.sha256(txtPassword_Log.getText())))) {
 							JOptionPane.showMessageDialog(null, "Bienvenido " + txtUser_Log.getText());
 							nodoUsuario = usuarios.getUsuario(txtUser_Log.getText());
 							Archivos nuevaVentana = new Archivos();
 							nuevaVentana.setVisible(true);
-						}else if(txtUser_Log.getText().equals("Admin") && txtPassword_Log.getText().equals("Admin")) {
-							Linker.app.frmEddDrive.setVisible(false);
-							Linker.admin.setVisible(true);
 						}
 						else {
 							JOptionPane.showMessageDialog(null, "El usuario o contraseña son incorrectos!!!");
