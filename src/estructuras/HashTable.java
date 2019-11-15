@@ -1,9 +1,16 @@
 package estructuras;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-import estructuras.Grafo;
-import metodos.*;
+import metodos.Hash;
 
 public class HashTable {
 	// esta variable solo me dirá la posición
@@ -32,36 +39,46 @@ public class HashTable {
 	static int nuevo_hash_index = 0;
 	static int intentos = 1;
 
-	public class nodoHash {
+	public static Grafo carpetaRaiz = null;
+
+	public static class nodoHash {
 		/* Nodo de la tabla Hash */
-		String nom;
+		public String nom;
 		String pass;
 		String hex_pass;
+		String timestamp;
 		int orden = 0;
-		Grafo archivos = null;
 
-		public nodoHash(String _nom, String _pass, String hex) {
+		public nodoHash(String _nom, String _pass, String hex, String creacion) {
 			// TODO Auto-generated constructor stub
 			nom = _nom;
-			pass = _pass;
 			hex_pass = hex;
-			archivos = new Grafo();
+			timestamp = creacion;
+			carpetaRaiz = new Grafo("/");
 		}
 	}
 
-	public void insertar(String _nom, String _pass) throws NoSuchAlgorithmException {
+	public void insertar(String _nom, String _pass, boolean nuevo) throws NoSuchAlgorithmException {
 		// Calculo de indice;
 		int indice = 0;
 		int hash_index = 0;
+		// Calculo de Inserción de Usuario (Fecha y Hora)
+		Date fecha = new Date();
+		SimpleDateFormat formato = new SimpleDateFormat("HH:mm:ss dd-MMM-yyyy");
+		String timestamp = "";
+		timestamp = formato.format(fecha);
 		// Suma de todos los ascci del nombre.
 		for (char i : _nom.toCharArray()) {
 			indice += i;
 		}
 		hash_index = indice % primos[indicePrimo];
 		// Calculo de codigo hash de la contraseña...
-		hex_hash = Hash.get_sha256(Hash.sha256(_pass));
+		if (nuevo) {
+			hex_hash = Hash.get_sha256(Hash.sha256(_pass));
+		}
+
 		if (users[hash_index] == null) {
-			users[hash_index] = new nodoHash(_nom, _pass, hex_hash);
+			users[hash_index] = new nodoHash(_nom, _pass, hex_hash, timestamp);
 			users[hash_index].orden = usuarios_registrados;
 			usuarios_registrados = usuarios_registrados + 1;
 		} else {
@@ -70,7 +87,7 @@ public class HashTable {
 			while (true) {
 				nuevo_hash_index = (int) (hash_index + Math.pow(intentos, 2)) % primos[indicePrimo];
 				if (users[nuevo_hash_index] == null) {
-					users[nuevo_hash_index] = new nodoHash(_nom, _pass, hex_hash);
+					users[nuevo_hash_index] = new nodoHash(_nom, _pass, hex_hash, timestamp);
 					users[nuevo_hash_index].orden = usuarios_registrados;
 					usuarios_registrados = usuarios_registrados + 1;
 					break;
@@ -110,7 +127,7 @@ public class HashTable {
 		usuarios_registrados = 0;
 		for (int i = 0; i < temp.length; i++) {
 			if (temp[i] != null) {
-				insertar(temp[i].nom, temp[i].pass);
+				insertar(temp[i].nom, temp[i].pass, false);
 			}
 		}
 		System.out.println("Después de Aplicar Rehashing");
@@ -192,7 +209,7 @@ public class HashTable {
 			return false;
 		}
 	}
-	
+
 	public String getPassHash(String nom) {
 		int indice = 0;
 		for (char i : nom.toCharArray()) {
@@ -220,6 +237,60 @@ public class HashTable {
 			}
 		} else {
 			return null;
+		}
+	}
+
+	public nodoHash getUsuario(String nom) {
+		int indice = 0;
+		for (char i : nom.toCharArray()) {
+			indice += i;
+		}
+		int search_index = indice % primos[indicePrimo];
+		if (users[search_index] != null) {
+			if (users[search_index].nom.equals(nom)) {
+				return users[search_index];
+			} else {
+				int contador = 0;
+				nuevo_hash_index = 0;
+				intentos = 1;
+				while (contador < primos[primos.length - 1]) {
+					nuevo_hash_index = (int) (search_index + Math.pow(intentos, 2)) % primos[indicePrimo];
+					if (users[nuevo_hash_index] != null) {
+						if (users[nuevo_hash_index].nom.equals(nom)) {
+							return users[nuevo_hash_index];
+						}
+					}
+					intentos++;
+					contador++;
+				}
+				return null;
+			}
+		} else {
+			return null;
+		}
+	}
+
+	public void Graficar() {
+		String archivo_dot = "digraph G{\n";
+		archivo_dot += "tbl[shape = plaintext\n" + "label = <" + "<table border='2' cellpadding='10'>\n";
+		for (int i = 0; i < users.length; i++) {
+			archivo_dot += "<tr>\n" + "<td>" + String.valueOf(i) + "</td>\n";
+			if (users[i] != null) {
+				archivo_dot += "<td>Nombre: " + users[i].nom
+						+ " - Contraseña: " + users[i].hex_pass + " - TimeStamp: " + users[i].timestamp + " </td>\n";
+			}
+			archivo_dot += "</tr>\n";
+		}
+		archivo_dot += "</table>>\n];}";
+		try {
+			BufferedWriter escritor = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("hashTable.dot"), "utf-8"));
+			escritor.write(archivo_dot);
+			escritor.close();
+			Runtime.getRuntime().exec("dot -Tjpg hashTable.dot -o tablita.jpg");
+			Thread.sleep(500);
+		} catch (IOException | InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 }

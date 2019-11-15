@@ -44,6 +44,7 @@ public class Admin extends JFrame {
 	private JTextPane txtProblemas;
 	private JScrollPane scrollProblemas;
 	private JPanel panelCargaMasiva;
+	private JPanel panelReportes;
 
 	/* Botones dentro del men� de Administrador */
 	private JMenuItem mntmAcciones;
@@ -108,6 +109,7 @@ public class Admin extends JFrame {
 				 * Por el momento, vamos a crear la interfaz de la carga masiva de usuarios...
 				 */
 				panelCargaMasiva.setVisible(true);
+				panelReportes.setVisible(false);
 			}
 		});
 		menuAcciones.add(mntmAcciones);
@@ -120,12 +122,32 @@ public class Admin extends JFrame {
 			}
 		});
 		menuAcciones.add(mntmCerrarSesin);
+		
+		JMenu mnReportes = new JMenu("Reportes");
+		menuBar.add(mnReportes);
+		
+		JMenuItem mntmUsuariostablaHash = new JMenuItem("Usuarios (Tabla Hash)");
+		mntmUsuariostablaHash.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				panelCargaMasiva.setVisible(false);
+				panelReportes.setVisible(true);
+				Menu_App.usuarios.Graficar();
+			}
+		});
+		mnReportes.add(mntmUsuariostablaHash);
+		
+		JMenuItem mntmBitcorapila = new JMenuItem("Bit\u00E1cora (Pila)");
+		mnReportes.add(mntmBitcorapila);
 		getContentPane().setLayout(null);
 
 		panelCargaMasiva = new JPanel();
 		panelCargaMasiva.setBackground(new Color(0, 51, 204));
 		panelCargaMasiva.setBounds(0, 0, 444, 250);
 		panelCargaMasiva.setVisible(false);
+		
+		panelReportes = new JPanel();
+		panelReportes.setBounds(0, 0, 444, 250);
+		getContentPane().add(panelReportes);
 		getContentPane().add(panelCargaMasiva);
 		panelCargaMasiva.setLayout(null);
 
@@ -156,6 +178,7 @@ public class Admin extends JFrame {
 							lectorArchivo = new BufferedReader(new InputStreamReader(new FileInputStream(fl.getAbsolutePath()), "utf-8"));
 							try {
 								lineaLeida = lectorArchivo.readLine();
+								lineaLeida = lectorArchivo.readLine();
 								String errores = "Errores Registrados:\n"
 										+ "Usuario:\t\tMotivo:\n";
 								int registrados = 0;
@@ -165,14 +188,14 @@ public class Admin extends JFrame {
 									 * datos[0] = usuario
 									 * datos[1] = contrase�a
 									 * */
-									if(Linker.usuarios.existe(datos[0]) || datos[0].equals("Admin")) {
+									if(Menu_App.usuarios.existe(datos[0]) || datos[0].equals("Admin")) {
 										errores += datos[0] + "\t\tya se encuentra Registrado:\n";
 									}else {
 										// Si no existe, entonces
 										// comprobar� que su contrase�a, tenga por lo menos 8 caracteres.
 										if(datos[1].length() >= 8) {
 											// Proceso de Inserci�n
-											Linker.usuarios.insertar(datos[0], datos[1]);
+											Menu_App.usuarios.insertar(datos[0], datos[1], true);
 											registrados++;
 										}else {
 											errores += datos[0] + "\t\tLa contrase�a no cumple con los 8 caracteres m�nimos";
