@@ -29,6 +29,8 @@ import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import paqueteInicio.PPAL;
+
 import java.awt.Font;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
@@ -77,8 +79,8 @@ public class Admin extends JFrame {
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e){
-				Linker.app.frmEddDrive.setVisible(true);
-				Linker.admin.setVisible(false);
+				setVisible(false);
+				PPAL.pantallaInicio.frmEddDrive.setVisible(true);
 			}
 		});
 		setTitle("Men\u00FA Administrador");
@@ -117,8 +119,8 @@ public class Admin extends JFrame {
 		JMenuItem mntmCerrarSesin = new JMenuItem("Cerrar Sesi\u00F3n");
 		mntmCerrarSesin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				Linker.app.frmEddDrive.setVisible(true);
-				Linker.admin.setVisible(false);
+				setVisible(false);
+				PPAL.pantallaInicio.frmEddDrive.setVisible(true);
 			}
 		});
 		menuAcciones.add(mntmCerrarSesin);
@@ -195,7 +197,9 @@ public class Admin extends JFrame {
 										// comprobar� que su contrase�a, tenga por lo menos 8 caracteres.
 										if(datos[1].length() >= 8) {
 											// Proceso de Inserci�n
-											Menu_App.usuarios.insertar(datos[0], datos[1], true);
+											System.out.println(datos[0]);
+											System.out.println(datos[1]);
+											Menu_App.usuarios.insertar(datos[0], datos[1]);
 											registrados++;
 										}else {
 											errores += datos[0] + "\t\tLa contrase�a no cumple con los 8 caracteres m�nimos";

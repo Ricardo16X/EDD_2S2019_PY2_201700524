@@ -42,7 +42,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import estructuras.Arbol;
 import estructuras.Arbol.nodoAVL;
 import estructuras.Grafo;
+import estructuras.HashTable;
 import estructuras.HashTable.nodoHash;
+import paqueteInicio.PPAL;
 
 public class Archivos extends JFrame {
 
@@ -89,9 +91,6 @@ public class Archivos extends JFrame {
 	 * Create the frame.
 	 */
 	public Archivos() {
-		carpetaActual = Linker.sistemaArchivos.getCarpeta();
-		archivoActual = carpetaActual.archivos;
-		usuarioActual = Menu_App.nodoUsuario;
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
@@ -103,8 +102,21 @@ public class Archivos extends JFrame {
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				Linker.app.frmEddDrive.setVisible(true);
+				carpetaActual = null;
+				archivoActual = null;
+				usuarioActual = null;
+				Menu_App.frmEddDrive.setVisible(true);
 				setVisible(false);
+			}
+			
+			@Override
+			public void windowOpened(WindowEvent e) {
+				carpetaActual = HashTable.carpetaRaiz;
+				System.out.println(carpetaActual);
+				archivoActual = carpetaActual.archivos;
+				System.out.println(archivoActual);
+				usuarioActual = PPAL.usuarioRegistrado;
+				System.out.println(usuarioActual);
 			}
 		});
 
@@ -171,8 +183,7 @@ public class Archivos extends JFrame {
 								timestamp = objSDF.format(fecha);
 								usuario = usuarioActual.nom;
 								/* Proceso de Inserción */
-								carpetaActual.archivos.raiz = Linker.archivos.crearArchivo(carpetaActual.archivos.raiz,
-										datos[0], datos[1], timestamp, usuario);
+								
 								/* Fin Inserción */
 								lineaLeida = lectorArchivo.readLine();
 							}
