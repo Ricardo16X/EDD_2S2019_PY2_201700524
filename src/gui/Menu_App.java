@@ -2,6 +2,7 @@ package gui;
 
 /*Imports from local packages*/
 import metodos.*;
+import paqueteInicio.*;
 
 import java.awt.EventQueue;
 
@@ -19,7 +20,6 @@ import javax.swing.JButton;
 import javax.swing.border.LineBorder;
 
 import estructuras.HashTable;
-import estructuras.HashTable.nodoHash;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -31,7 +31,7 @@ import java.awt.event.ActionEvent;
 
 public class Menu_App {
 	// Displays
-	protected JFrame frmEddDrive;
+	public static JFrame frmEddDrive;
 	private JPanel PanelRegistro;
 	private JPanel PanelSesion;
 	// Texto
@@ -44,8 +44,8 @@ public class Menu_App {
 	private JButton btnIngresar;
 	private JButton btnRegistrar;
 	// Variable control de Usuario
-	public static nodoHash nodoUsuario;
-	public static HashTable usuarios;
+	static HashTable usuarios;
+	
 	/**
 	 * Launch the application.
 	 */
@@ -54,7 +54,7 @@ public class Menu_App {
 			public void run() {
 				try {
 					Menu_App window = new Menu_App();
-					window.frmEddDrive.setVisible(true);
+					window.frmEddDrive.setVisible(true);					
 					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -65,16 +65,24 @@ public class Menu_App {
 
 	/**
 	 * Create the application.
+	 * @throws NoSuchAlgorithmException 
 	 */
-	public Menu_App() {
+	public Menu_App(){
 		initialize();
 		usuarios = new HashTable();
+		try {
+			usuarios.insertar("Especial", "EspecialVIP");
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
 	 * Initialize the contents of the frame.
+	 * @throws NoSuchAlgorithmException 
 	 */
-	private void initialize() {
+	private void initialize(){		
 		frmEddDrive = new JFrame();
 		frmEddDrive.setTitle("EDD DRIVE");
 		frmEddDrive.getContentPane().setBackground(new Color(32, 178, 170));
@@ -121,7 +129,7 @@ public class Menu_App {
 					// Hacer el proceso de Inserción y su respectivo ingreso a la tabla hash
 					if(!txtUser_Reg.getText().equals("Admin") && !usuarios.existe(txtUser_Reg.getText())) {
 						try {
-							usuarios.insertar(txtUser_Reg.getText(), txtPassword_Reg.getText(), true);
+							usuarios.insertar(txtUser_Reg.getText(), txtPassword_Reg.getText());
 							JOptionPane.showMessageDialog(null, "El Usuario " + txtUser_Reg.getText() + " ha sido registrado...");
 							limpiar();
 							PanelSesion.setVisible(true);
@@ -166,13 +174,16 @@ public class Menu_App {
 					try {
 						if(txtUser_Log.getText().equals("Admin") && txtPassword_Log.getText().equals("Admin")) {
 							frmEddDrive.setVisible(false);
-							Admin nd = new Admin();
-							nd.setVisible(true);
+							PPAL.administrador.setVisible(true);
+							frmEddDrive.setVisible(false);
+							limpiar();
 						}else if (usuarios.existe(txtUser_Log.getText()) && usuarios.getPassHash(txtUser_Log.getText()).equals(Hash.get_sha256(Hash.sha256(txtPassword_Log.getText())))) {
 							JOptionPane.showMessageDialog(null, "Bienvenido " + txtUser_Log.getText());
-							nodoUsuario = usuarios.getUsuario(txtUser_Log.getText());
-							Archivos nuevaVentana = new Archivos();
-							nuevaVentana.setVisible(true);
+							PPAL.usuarioRegistrado = usuarios.getUsuario(txtUser_Log.getText());
+							
+							PPAL.sistemaArchivos.setVisible(true);
+							frmEddDrive.setVisible(false);
+							limpiar();
 						}
 						else {
 							JOptionPane.showMessageDialog(null, "El usuario o contraseña son incorrectos!!!");
@@ -243,4 +254,5 @@ public class Menu_App {
 		txtPassword_Log.setText(null);
 		txtPassword_Reg.setText(null);
 	}
+	
 }

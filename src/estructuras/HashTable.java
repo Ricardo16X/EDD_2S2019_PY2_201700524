@@ -39,26 +39,26 @@ public class HashTable {
 	static int nuevo_hash_index = 0;
 	static int intentos = 1;
 
-	public static Grafo carpetaRaiz = null;
-
 	public static class nodoHash {
 		/* Nodo de la tabla Hash */
 		public String nom;
 		String pass;
 		String hex_pass;
 		String timestamp;
+		public Grafo carpetaRaiz;
 		int orden = 0;
 
 		public nodoHash(String _nom, String _pass, String hex, String creacion) {
 			// TODO Auto-generated constructor stub
 			nom = _nom;
+			pass = _pass;
 			hex_pass = hex;
 			timestamp = creacion;
 			carpetaRaiz = new Grafo("/");
 		}
 	}
 
-	public void insertar(String _nom, String _pass, boolean nuevo) throws NoSuchAlgorithmException {
+	public void insertar(String _nom, String _pass) throws NoSuchAlgorithmException {
 		// Calculo de indice;
 		int indice = 0;
 		int hash_index = 0;
@@ -73,10 +73,7 @@ public class HashTable {
 		}
 		hash_index = indice % primos[indicePrimo];
 		// Calculo de codigo hash de la contraseña...
-		if (nuevo) {
-			hex_hash = Hash.get_sha256(Hash.sha256(_pass));
-		}
-
+		hex_hash = Hash.get_sha256(Hash.sha256(_pass));
 		if (users[hash_index] == null) {
 			users[hash_index] = new nodoHash(_nom, _pass, hex_hash, timestamp);
 			users[hash_index].orden = usuarios_registrados;
@@ -126,12 +123,8 @@ public class HashTable {
 		// los valores anteriores
 		usuarios_registrados = 0;
 		for (int i = 0; i < temp.length; i++) {
-			if (temp[i] != null) {
-				insertar(temp[i].nom, temp[i].pass, false);
-			}
+			insertar(temp[i].nom, temp[i].pass);
 		}
-		System.out.println("Después de Aplicar Rehashing");
-		mostrar(users);
 	}
 
 	public void mostrar(nodoHash[] array) {
@@ -276,14 +269,15 @@ public class HashTable {
 		for (int i = 0; i < users.length; i++) {
 			archivo_dot += "<tr>\n" + "<td>" + String.valueOf(i) + "</td>\n";
 			if (users[i] != null) {
-				archivo_dot += "<td>Nombre: " + users[i].nom
-						+ " - Contraseña: " + users[i].hex_pass + " - TimeStamp: " + users[i].timestamp + " </td>\n";
+				archivo_dot += "<td>Nombre: " + users[i].nom + " - Contraseña: " + users[i].hex_pass + " - TimeStamp: "
+						+ users[i].timestamp + " </td>\n";
 			}
 			archivo_dot += "</tr>\n";
 		}
 		archivo_dot += "</table>>\n];}";
 		try {
-			BufferedWriter escritor = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("hashTable.dot"), "utf-8"));
+			BufferedWriter escritor = new BufferedWriter(
+					new OutputStreamWriter(new FileOutputStream("hashTable.dot"), "utf-8"));
 			escritor.write(archivo_dot);
 			escritor.close();
 			Runtime.getRuntime().exec("dot -Tjpg hashTable.dot -o tablita.jpg");
