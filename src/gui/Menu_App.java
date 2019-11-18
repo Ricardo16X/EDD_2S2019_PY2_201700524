@@ -254,4 +254,5 @@ public class Menu_App {
 		txtPassword_Log.setText(null);
 		txtPassword_Reg.setText(null);
 	}
+	
 }

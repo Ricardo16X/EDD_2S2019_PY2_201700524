@@ -21,6 +21,8 @@ import java.security.NoSuchAlgorithmException;
 import java.awt.event.ActionEvent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -29,13 +31,18 @@ import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import metodos.Hash;
 import paqueteInicio.PPAL;
 
 import java.awt.Font;
+import java.awt.Image;
+
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.ScrollPaneConstants;
 import java.awt.Color;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 public class Admin extends JFrame {
 	/**
@@ -54,6 +61,11 @@ public class Admin extends JFrame {
 
 	private BufferedReader lectorArchivo;
 	private String lineaLeida;
+
+	/* Reportes */
+	JLabel imagenReporte = new JLabel();
+	JScrollPane visualizar = new JScrollPane();
+	
 	/**
 	 * Launch the application.
 	 */
@@ -78,9 +90,19 @@ public class Admin extends JFrame {
 		getContentPane().setBackground(Color.DARK_GRAY);
 		addWindowListener(new WindowAdapter() {
 			@Override
-			public void windowClosing(WindowEvent e){
+			public void windowClosing(WindowEvent e) {
 				setVisible(false);
 				PPAL.pantallaInicio.frmEddDrive.setVisible(true);
+				panelCargaMasiva.setVisible(false);
+				panelReportes.removeAll();
+				panelReportes.setVisible(false);
+			}
+			
+			@Override
+			public void windowOpened(WindowEvent e) {
+				panelCargaMasiva.setVisible(false);
+				panelReportes.setVisible(false);
+				panelReportes.removeAll();
 			}
 		});
 		setTitle("Men\u00FA Administrador");
@@ -97,7 +119,7 @@ public class Admin extends JFrame {
 
 		mntmAcciones = new JMenuItem("Carga Masiva");
 		mntmAcciones.addActionListener(new ActionListener() {
-                        @Override
+			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				// Cuando la carga masiva se activa
 				// procederemos a pedir los datos del archivo de entrada
@@ -115,30 +137,61 @@ public class Admin extends JFrame {
 			}
 		});
 		menuAcciones.add(mntmAcciones);
-		
+
 		JMenuItem mntmCerrarSesin = new JMenuItem("Cerrar Sesi\u00F3n");
 		mntmCerrarSesin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				setVisible(false);
 				PPAL.pantallaInicio.frmEddDrive.setVisible(true);
+				panelCargaMasiva.setVisible(false);
+				panelReportes.removeAll();
+				panelReportes.setVisible(false);
 			}
 		});
 		menuAcciones.add(mntmCerrarSesin);
-		
+
 		JMenu mnReportes = new JMenu("Reportes");
 		menuBar.add(mnReportes);
-		
+
 		JMenuItem mntmUsuariostablaHash = new JMenuItem("Usuarios (Tabla Hash)");
 		mntmUsuariostablaHash.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				panelCargaMasiva.setVisible(false);
-				panelReportes.setVisible(true);
 				Menu_App.usuarios.Graficar();
+				try {
+					Thread.sleep(500);
+					imagenReporte.setIcon(new ImageIcon(ImageIO.read(new File("tablita.jpg"))));
+					visualizar.setLocation(0, 0);
+					visualizar.setSize(444, 250);
+					panelReportes.add(visualizar);
+					visualizar.setViewportView(imagenReporte);
+					panelReportes.setVisible(true);
+				} catch (InterruptedException | IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		});
 		mnReportes.add(mntmUsuariostablaHash);
-		
+
 		JMenuItem mntmBitcorapila = new JMenuItem("Bit\u00E1cora (Pila)");
+		mntmBitcorapila.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				panelCargaMasiva.setVisible(false);
+				PPAL.bitacora.graficar();
+				try {
+					Thread.sleep(500);
+					imagenReporte.setIcon(new ImageIcon(ImageIO.read(new File("cambios.jpg"))));
+					visualizar.setLocation(0, 0);
+					visualizar.setSize(444,250);
+					panelReportes.add(visualizar);
+					visualizar.setViewportView(imagenReporte);
+					panelReportes.setVisible(true);
+				} catch (InterruptedException | IOException e) {
+					// TODO: handle exception
+				}
+			}
+		});
 		mnReportes.add(mntmBitcorapila);
 		getContentPane().setLayout(null);
 
@@ -146,12 +199,21 @@ public class Admin extends JFrame {
 		panelCargaMasiva.setBackground(new Color(0, 51, 204));
 		panelCargaMasiva.setBounds(0, 0, 444, 250);
 		panelCargaMasiva.setVisible(false);
-		
+		panelCargaMasiva.setLayout(null);
+
 		panelReportes = new JPanel();
+		panelReportes.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentHidden(ComponentEvent arg0) {
+				panelReportes.removeAll();
+			}
+		});
 		panelReportes.setBounds(0, 0, 444, 250);
+		panelReportes.setVisible(false);
+		panelReportes.setLayout(null);
+
 		getContentPane().add(panelReportes);
 		getContentPane().add(panelCargaMasiva);
-		panelCargaMasiva.setLayout(null);
 
 		btnExaminar = new JButton("Examinar...");
 		btnExaminar.addActionListener(new ActionListener() {
@@ -161,7 +223,7 @@ public class Admin extends JFrame {
 				JFileChooser jf = new JFileChooser();
 				File fl = null;
 				String[] datos;
-				
+
 				jf.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				FileFilter filtro = new FileNameExtensionFilter("Archivos CSV", "csv");
 				jf.setFileFilter(filtro);
@@ -177,41 +239,42 @@ public class Admin extends JFrame {
 						txtDirFile.setText(fl.getName());
 						// Lectura de Archivo
 						try {
-							lectorArchivo = new BufferedReader(new InputStreamReader(new FileInputStream(fl.getAbsolutePath()), "utf-8"));
+							lectorArchivo = new BufferedReader(
+									new InputStreamReader(new FileInputStream(fl.getAbsolutePath()), "utf-8"));
 							try {
 								lineaLeida = lectorArchivo.readLine();
 								lineaLeida = lectorArchivo.readLine();
-								String errores = "Errores Registrados:\n"
-										+ "Usuario:\t\tMotivo:\n";
+								String errores = "Errores Registrados:\n" + "Usuario:\t\tMotivo:\n";
 								int registrados = 0;
-								while(lineaLeida != null) {
+								while (lineaLeida != null) {
 									datos = lineaLeida.split(",");
 									/*
-									 * datos[0] = usuario
-									 * datos[1] = contrase�a
-									 * */
-									if(Menu_App.usuarios.existe(datos[0]) || datos[0].equals("Admin")) {
+									 * datos[0] = usuario datos[1] = contrase�a
+									 */
+									if (Menu_App.usuarios.existe(datos[0]) || datos[0].equals("Admin")) {
 										errores += datos[0] + "\t\tya se encuentra Registrado:\n";
-									}else {
+									} else {
 										// Si no existe, entonces
 										// comprobar� que su contrase�a, tenga por lo menos 8 caracteres.
-										if(datos[1].length() >= 8) {
+										if (datos[1].length() >= 8) {
 											// Proceso de Inserci�n
 											System.out.println(datos[0]);
 											System.out.println(datos[1]);
 											Menu_App.usuarios.insertar(datos[0], datos[1]);
 											registrados++;
-										}else {
-											errores += datos[0] + "\t\tLa contrase�a no cumple con los 8 caracteres m�nimos";
+										} else {
+											errores += datos[0]
+													+ "\t\tLa contrase�a no cumple con los 8 caracteres m�nimos";
 										}
 									}
 									lineaLeida = lectorArchivo.readLine();
 								}
-								
+
 								String resultado = "Usuarios Registrados: " + registrados + "\n\n";
 								resultado += errores;
-								
+
 								txtProblemas.setText(resultado);
+								PPAL.bitacora.reg_bitacora(Hash.timestamp(), "Registro Masivo de Usuarios", "Admin");
 							} catch (IOException | NoSuchAlgorithmException e) {
 								// TODO Auto-generated catch block
 								JOptionPane.showMessageDialog(null, e.getMessage());
@@ -223,7 +286,7 @@ public class Admin extends JFrame {
 					}
 				}
 				// Intentamos resguardar los datos y los insertamos...
-				
+
 			}
 		});
 		btnExaminar.setBounds(322, 40, 112, 25);

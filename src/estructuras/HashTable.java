@@ -39,14 +39,13 @@ public class HashTable {
 	static int nuevo_hash_index = 0;
 	static int intentos = 1;
 
-	public static Grafo carpetaRaiz = null;
-
 	public static class nodoHash {
 		/* Nodo de la tabla Hash */
 		public String nom;
 		String pass;
 		String hex_pass;
 		String timestamp;
+		public Grafo carpetaRaiz;
 		int orden = 0;
 
 		public nodoHash(String _nom, String _pass, String hex, String creacion) {
@@ -281,7 +280,7 @@ public class HashTable {
 					new OutputStreamWriter(new FileOutputStream("hashTable.dot"), "utf-8"));
 			escritor.write(archivo_dot);
 			escritor.close();
-			Runtime.getRuntime().exec("dot -Tjpg hashTable.dot -o src/imagenes/tablita.jpg");
+			Runtime.getRuntime().exec("dot -Tjpg hashTable.dot -o tablita.jpg");
 			Thread.sleep(500);
 		} catch (IOException | InterruptedException e) {
 			// TODO Auto-generated catch block

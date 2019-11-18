@@ -5,9 +5,11 @@ import javax.swing.JOptionPane;
 public class Grafo {
 	
 	public String nombreCarpeta;
-	Grafo primero, ultimo;
-	Grafo siguiente;
+	public Grafo primero, ultimo;
+	public Grafo siguiente;
 	public Arbol archivos;
+	
+	public static String dot;
 	
 	
 	public Grafo(String nombreCarpeta) {
@@ -19,7 +21,7 @@ public class Grafo {
 	}
 	
 	public Grafo() {
-		System.out.println("Instancia de Grafo");
+		
 	}
 	
 	public void agregarCarpeta(Grafo estaCarpeta,String subCarpeta) {
@@ -50,19 +52,36 @@ public class Grafo {
 		return siExiste;
 	}
 	
-	public Grafo getCarpeta() {
-		return HashTable.carpetaRaiz;
-	}
-	
 	public Grafo getCarpeta(Grafo carpetaPadre, String carpetaHijo) {
-		Grafo temporal = carpetaPadre;
+		Grafo temporal = carpetaPadre.primero;
 		while(temporal != null) {
 			if(temporal.nombreCarpeta.equals(carpetaHijo)) {
 				return temporal;
 			}
+			temporal = temporal.siguiente;
 		}
 		return null;
 	}
 	
+	public void graphic(Grafo carpetaRaiz) {
+		dot = "digraph G{\n"
+				+ "rankdir=LR\n"
+				+ "size = \"8.5\"\n"
+				+ "node [shape=doublecircle]; \"/\";\n"
+				+ "node [shape = circle];\n";
+		aux_graphic(carpetaRaiz);
+	}
 	
+	public void aux_graphic(Grafo carpetaRaiz) {
+		Grafo temp = carpetaRaiz.primero;
+		// Caso Base de Retorno
+		if(temp == null)
+			return;
+		// Caso de Operación
+		while(temp != null) {
+			System.out.println(temp.nombreCarpeta);
+			aux_graphic(temp);
+			temp = temp.siguiente;
+		}
+	}
 }
